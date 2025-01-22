@@ -1,97 +1,157 @@
 "use client";
 import { useState } from "react";
-import { Card } from "@/components/common/Card";
-
-interface PayrollComponent {
-  id: string;
-  name: string;
-  type: "percentage" | "fixed" | "calculated";
-  defaultValue: number;
-  editable: boolean;
-}
-
-interface PayrollConfig {
-  earnings: PayrollComponent[];
-  deductions: PayrollComponent[];
-}
-
-interface MonthlyPayroll {
-  month: string;
-  year: number;
-  earnings: Record<string, number>;
-  deductions: Record<string, number>;
-  netPayable: number;
-}
-
-interface Employee {
-  employeeId: string;
-  name: string;
-  designation: string;
-  ctc: number;
-  monthlyPayroll: MonthlyPayroll;
-}
+import { Employee, MonthlyPayroll, PayrollConfig } from "@/types/payroll";
 
 interface PayrollCardProps {
   employee: Employee;
   payrollConfig: PayrollConfig;
+  onUpdate?: (employeeId: string, updatedPayroll: MonthlyPayroll) => void;
+  isEditing: boolean;
+  onEditClick: () => void;
+  onSave: () => void;
+  onCancel: () => void;
 }
 
-export function PayrollCard({ employee, payrollConfig }: PayrollCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+export function PayrollCard({
+  employee,
+  payrollConfig,
+  onUpdate,
+  isEditing,
+  onEditClick,
+  onSave,
+  onCancel,
+}: PayrollCardProps) {
+  const [editedPayroll, setEditedPayroll] = useState(employee.monthlyPayroll);
+
+  const handleValueChange = (
+    category: "earnings" | "deductions",
+    componentId:
+      | keyof MonthlyPayroll["earnings"]
+      | keyof MonthlyPayroll["deductions"],
+    value: string
+  ) => {
+    const numValue = Number(value) || 0;
+    const newPayroll = {
+      ...editedPayroll,
+      [category]: {
+        ...editedPayroll[category],
+        [componentId]: numValue,
+      },
+    };
+
+    // Calculate net payable
+    const totalEarnings = Object.values(newPayroll.earnings).reduce(
+      (a, b) => a + b,
+      0
+    );
+    const totalDeductions = Object.values(newPayroll.deductions).reduce(
+      (a, b) => a + b,
+      0
+    );
+    newPayroll.netPayable = totalEarnings - totalDeductions;
+
+    setEditedPayroll(newPayroll);
+    onUpdate?.(employee.employeeId, newPayroll);
+  };
 
   return (
-    <Card className="w-full">
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-xl font-semibold text-white">
-              {employee.name}
-            </h3>
-            <p className="text-gray-400">{employee.designation}</p>
+    <tr className="border-b border-white/10">
+      <td className="py-4">
+        <div>
+          <div className="font-medium text-white">{employee.name}</div>
+          <div className="text-sm text-gray-400">{employee.designation}</div>
+        </div>
+      </td>
+      {payrollConfig.earnings.map((component) => (
+        <td key={component.id} className="py-4">
+          {isEditing ? (
+            <input
+              type="number"
+              value={
+                editedPayroll.earnings[
+                  component.id as keyof MonthlyPayroll["earnings"]
+                ]
+              }
+              onChange={(e) =>
+                handleValueChange(
+                  "earnings",
+                  component.id as keyof MonthlyPayroll["earnings"],
+                  e.target.value
+                )
+              }
+              className="w-full bg-primary-darker text-white px-3 py-1 rounded border border-white/10 text-right"
+            />
+          ) : (
+            <span className="block text-right text-gray-200">
+              ₹
+              {
+                editedPayroll.earnings[
+                  component.id as keyof MonthlyPayroll["earnings"]
+                ]
+              }
+            </span>
+          )}
+        </td>
+      ))}
+      {payrollConfig.deductions.map((component) => (
+        <td key={component.id} className="py-4">
+          {isEditing ? (
+            <input
+              type="number"
+              value={
+                editedPayroll.deductions[
+                  component.id as keyof MonthlyPayroll["deductions"]
+                ]
+              }
+              onChange={(e) =>
+                handleValueChange(
+                  "deductions",
+                  component.id as keyof MonthlyPayroll["deductions"],
+                  e.target.value
+                )
+              }
+              className="w-full bg-primary-darker text-white px-3 py-1 rounded border border-white/10 text-right"
+            />
+          ) : (
+            <span className="block text-right text-gray-200">
+              ₹
+              {
+                editedPayroll.deductions[
+                  component.id as keyof MonthlyPayroll["deductions"]
+                ]
+              }
+            </span>
+          )}
+        </td>
+      ))}
+      <td className="py-4 text-right font-medium text-accent-main">
+        ₹{editedPayroll.netPayable}
+      </td>
+      <td className="py-4">
+        {isEditing ? (
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={onSave}
+              className="px-3 py-1 bg-accent-main text-white text-sm rounded hover:bg-accent-light"
+            >
+              Save
+            </button>
+            <button
+              onClick={onCancel}
+              className="px-3 py-1 bg-primary-darker text-white text-sm rounded"
+            >
+              Cancel
+            </button>
           </div>
+        ) : (
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-accent-main hover:text-accent-light"
+            onClick={onEditClick}
+            className="px-3 py-1 bg-accent-main text-white text-sm rounded hover:bg-accent-light"
           >
-            {isExpanded ? "Show Less" : "Show Details"}
+            Edit
           </button>
-        </div>
-
-        {isExpanded && (
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h4 className="text-lg font-medium text-white">Earnings</h4>
-              {payrollConfig.earnings.map((component: any) => (
-                <div key={component.id} className="flex justify-between">
-                  <span className="text-gray-400">{component.name}</span>
-                  <span className="text-white">
-                    ₹{employee.monthlyPayroll.earnings[component.id]}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-lg font-medium text-white">Deductions</h4>
-              {payrollConfig.deductions.map((component: any) => (
-                <div key={component.id} className="flex justify-between">
-                  <span className="text-gray-400">{component.name}</span>
-                  <span className="text-white">
-                    ₹{employee.monthlyPayroll.deductions[component.id]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
-
-        <div className="flex justify-between pt-4 border-t border-white/10">
-          <span className="text-lg font-medium text-white">Net Payable</span>
-          <span className="text-xl font-semibold text-accent-main">
-            ₹{employee.monthlyPayroll.netPayable}
-          </span>
-        </div>
-      </div>
-    </Card>
+      </td>
+    </tr>
   );
 }
