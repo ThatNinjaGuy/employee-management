@@ -7,14 +7,12 @@ type AttendanceActionsProps = {
     employeeId: number,
     status: "present" | "absent" | "late"
   ) => void;
-  onCheckOut: (employeeId: number) => void;
 };
 
 export function AttendanceActions({
   employeeId,
   attendance,
   onMarkAttendance,
-  onCheckOut,
 }: AttendanceActionsProps) {
   if (!attendance) {
     return (
@@ -77,30 +75,6 @@ export function AttendanceActions({
           Absent
         </button>
       </div>
-    );
-  }
-
-  if (!attendance.checkOut) {
-    return (
-      <button
-        onClick={() => onCheckOut(employeeId)}
-        className="w-full py-2 px-4 rounded-xl bg-accent-main/80 hover:bg-accent-main text-primary-darkest font-medium transition-colors duration-300 flex items-center justify-center gap-2"
-      >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-          />
-        </svg>
-        Check Out
-      </button>
     );
   }
 

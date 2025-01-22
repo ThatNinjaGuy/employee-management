@@ -8,7 +8,6 @@ type AttendanceCardProps = {
     employeeId: number,
     status: "present" | "absent" | "late"
   ) => void;
-  onCheckOut: (employeeId: number) => void;
   isSelected: boolean;
   onToggleSelect: () => void;
 };
@@ -17,7 +16,6 @@ export function AttendanceCard({
   employee,
   attendance,
   onMarkAttendance,
-  onCheckOut,
   isSelected,
   onToggleSelect,
 }: AttendanceCardProps) {
@@ -134,7 +132,6 @@ export function AttendanceCard({
         employeeId={employee.id}
         attendance={attendance}
         onMarkAttendance={onMarkAttendance}
-        onCheckOut={onCheckOut}
       />
     </div>
   );
