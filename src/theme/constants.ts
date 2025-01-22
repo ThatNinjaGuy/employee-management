@@ -25,7 +25,7 @@ export const spacing = {
 export const sizes = {
   icon: {
     container: "w-12 h-12",
-    default: "w-6 h-6",
+    default: "w-5 h-5",
   },
   text: {
     h1: "text-4xl",
