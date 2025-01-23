@@ -1,19 +1,111 @@
+"use client";
+
+import { utils, writeFile } from "xlsx";
+
 interface PayrollActionsProps {
   onSearch?: (term: string) => void;
   onDepartmentChange?: (department: string) => void;
+  employeeData?: Array<{
+    id: number;
+    name: string;
+    department: string;
+    position: string;
+  }>;
+  payrollData?: Array<{
+    employeeId: number;
+    month: string;
+    basicWage: number;
+    overtime: { hours: number; amount: number };
+    allowances: { food: number; travel: number };
+    deductions: { advances: number; other: number };
+  }>;
 }
 
 export function PayrollActions({
   onSearch,
   onDepartmentChange,
+  employeeData = [],
+  payrollData = [],
 }: PayrollActionsProps) {
+  const handleExportReport = () => {
+    try {
+      const exportData = employeeData.map((emp) => {
+        const payroll = payrollData.find((p) => p.employeeId === emp.id) || {
+          basicWage: 0,
+          overtime: { hours: 0, amount: 0 },
+          allowances: { food: 0, travel: 0 },
+          deductions: { advances: 0, other: 0 },
+          month: "-",
+        };
+
+        const netPayable =
+          payroll.basicWage +
+          payroll.overtime.amount +
+          payroll.allowances.food +
+          payroll.allowances.travel -
+          payroll.deductions.advances -
+          payroll.deductions.other;
+
+        return {
+          "Employee Name": emp.name,
+          Department: emp.department,
+          Position: emp.position,
+          Month: payroll.month || "-",
+          "Basic Wage": payroll.basicWage || 0,
+          "Overtime Hours": payroll.overtime?.hours || 0,
+          "Overtime Amount": payroll.overtime?.amount || 0,
+          "Food Allowance": payroll.allowances?.food || 0,
+          "Travel Allowance": payroll.allowances?.travel || 0,
+          "Advances Deduction": payroll.deductions?.advances || 0,
+          "Other Deductions": payroll.deductions?.other || 0,
+          "Net Payable": netPayable || 0,
+        };
+      });
+
+      // Configure column widths
+      const ws = utils.json_to_sheet(exportData);
+      const colWidths = [
+        { wch: 20 }, // Employee Name
+        { wch: 15 }, // Department
+        { wch: 20 }, // Position
+        { wch: 10 }, // Month
+        { wch: 12 }, // Basic Wage
+        { wch: 12 }, // Overtime Hours
+        { wch: 12 }, // Overtime Amount
+        { wch: 12 }, // Food Allowance
+        { wch: 12 }, // Travel Allowance
+        { wch: 12 }, // Advances Deduction
+        { wch: 12 }, // Other Deductions
+        { wch: 12 }, // Net Payable
+      ];
+      ws["!cols"] = colWidths;
+
+      const wb = utils.book_new();
+      utils.book_append_sheet(wb, ws, "Payroll Report");
+
+      writeFile(
+        wb,
+        `payroll-report-${new Date().toISOString().split("T")[0]}.xlsx`
+      );
+    } catch (error) {
+      console.error("Export error:", error);
+      alert("Export failed. Check console for details.");
+    }
+  };
+
   return (
     <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
       <div className="flex gap-4">
         <button className="px-4 py-2 bg-accent-main text-white rounded-xl hover:bg-accent-light transition-colors duration-300">
           Generate Payslips
         </button>
-        <button className="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors duration-300">
+        <button
+          onClick={() => {
+            console.log("Button clicked");
+            handleExportReport();
+          }}
+          className="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors duration-300"
+        >
           Export Report
         </button>
       </div>

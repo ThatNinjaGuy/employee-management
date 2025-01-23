@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { payrollConfig } from "@/data/payrollConfig";
+import { payrollConfig } from "@/types/payroll";
 import { employeePayrolls } from "@/data/dummy";
 import { useEmployees } from "@/context/EmployeeContext";
 import { PayrollCard } from "./PayrollCard";
@@ -16,6 +16,8 @@ export function PayrollManagement() {
   ); // YYYY-MM format
   const [payrollData, setPayrollData] = useState(employeePayrolls);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
 
   // Add console.log to debug
   console.log({
@@ -37,6 +39,23 @@ export function PayrollManagement() {
 
   const filteredPayroll = payrollData.filter((p) => p.month === selectedMonth);
 
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+
+  const handleDepartmentChange = (department: string) => {
+    setSelectedDepartment(department);
+  };
+
+  const filteredEmployees = employees.filter((employee) => {
+    const matchesSearch = employee.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesDepartment =
+      !selectedDepartment || employee.department === selectedDepartment;
+    return matchesSearch && matchesDepartment;
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main relative">
       <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:4rem_4rem] pointer-events-none" />
@@ -47,7 +66,12 @@ export function PayrollManagement() {
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
         />
-        <PayrollActions />
+        <PayrollActions
+          onSearch={handleSearch}
+          onDepartmentChange={handleDepartmentChange}
+          employeeData={employees}
+          payrollData={filteredPayroll}
+        />
 
         <div className="mt-8 overflow-x-auto bg-white/10 backdrop-blur-md rounded-2xl border border-white/10">
           <table className="w-full">
@@ -71,7 +95,7 @@ export function PayrollManagement() {
               </tr>
             </thead>
             <tbody>
-              {employees.map((employee) => {
+              {filteredEmployees.map((employee) => {
                 const payroll = filteredPayroll.find(
                   (p) => p.employeeId === employee.id
                 );
