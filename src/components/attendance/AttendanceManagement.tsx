@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { attendance as initialAttendance, employees } from "@/data/dummy";
-import { Attendance } from "@/types";
+import { useEmployees } from "@/context/EmployeeContext";
+import { useAttendance } from "@/context/AttendanceContext";
 import { AttendanceHeader } from "./AttendanceHeader";
 import { AttendanceCard } from "./AttendanceCard";
 
 export function AttendanceManagement() {
-  const [attendance, setAttendance] = useState<Attendance[]>(initialAttendance);
+  const { employees } = useEmployees();
+  const { employeeAttendance, addAttendanceRecord, bulkCheckout } =
+    useAttendance();
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -29,24 +31,28 @@ export function AttendanceManagement() {
     return matchesSearch && matchesDepartment;
   });
 
-  const filteredAttendance = attendance.filter((a) => a.date === selectedDate);
+  const getAttendanceForDate = (employeeId: number) => {
+    const employeeData = employeeAttendance.find(
+      (ea) => ea.employeeId === employeeId
+    );
+    return employeeData?.attendance.find((a) => a.date === selectedDate);
+  };
 
   const handleMarkAttendanceForSelected = (
     status: "present" | "absent" | "late"
   ) => {
-    const today = new Date().toISOString().split("T")[0];
     const now = new Date().toLocaleTimeString("en-US", { hour12: false });
 
-    const newAttendances = selectedEmployees.map((employeeId) => ({
-      id: attendance.length + employeeId,
-      employeeId,
-      date: today,
-      checkIn: now,
-      checkOut: "",
-      status,
-    }));
-
-    setAttendance([...attendance, ...newAttendances]);
+    selectedEmployees.forEach((employeeId) => {
+      const newRecord = {
+        id: Date.now() + employeeId,
+        date: selectedDate,
+        checkIn: now,
+        checkOut: "",
+        status,
+      };
+      addAttendanceRecord(employeeId, newRecord);
+    });
     setSelectedEmployees([]);
   };
 
@@ -62,36 +68,29 @@ export function AttendanceManagement() {
     employeeId: number,
     status: "present" | "absent" | "late"
   ) => {
-    const today = new Date().toISOString().split("T")[0];
     const now = new Date().toLocaleTimeString("en-US", { hour12: false });
-
-    const newAttendance: Attendance = {
-      id: attendance.length + 1,
-      employeeId,
-      date: today,
+    const newRecord = {
+      id: Date.now(),
+      date: selectedDate,
       checkIn: now,
       checkOut: "",
       status,
     };
-
-    setAttendance([...attendance, newAttendance]);
+    addAttendanceRecord(employeeId, newRecord);
   };
 
   const handleBulkCheckOut = () => {
     const now = new Date().toLocaleTimeString("en-US", { hour12: false });
-    setAttendance(
-      attendance.map((record) =>
-        record.date === selectedDate && !record.checkOut
-          ? { ...record, checkOut: now }
-          : record
-      )
-    );
+    bulkCheckout(selectedDate, now);
   };
 
   // Get count of employees who haven't checked out
-  const pendingCheckouts = filteredAttendance.filter(
-    (record) => !record.checkOut
-  ).length;
+  const pendingCheckouts = employeeAttendance.reduce((count, emp) => {
+    const todayRecord = emp.attendance.find(
+      (a) => a.date === selectedDate && !a.checkOut
+    );
+    return todayRecord ? count + 1 : count;
+  }, 0);
 
   const handleSelectAll = () => {
     const allEmployeeIds = filteredEmployees.map((emp) => emp.id);
@@ -187,9 +186,7 @@ export function AttendanceManagement() {
               <div className="absolute -inset-2 bg-gradient-to-r from-accent-main/20 to-accent-light/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <AttendanceCard
                 employee={employee}
-                attendance={filteredAttendance.find(
-                  (a) => a.employeeId === employee.id
-                )}
+                attendance={getAttendanceForDate(employee.id)}
                 onMarkAttendance={handleMarkAttendance}
                 isSelected={selectedEmployees.includes(employee.id)}
                 onToggleSelect={() => toggleEmployeeSelection(employee.id)}

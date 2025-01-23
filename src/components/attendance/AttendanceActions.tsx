@@ -1,8 +1,8 @@
-import { Attendance } from "@/types";
+import { AttendanceRecord } from "@/types";
 
 type AttendanceActionsProps = {
   employeeId: number;
-  attendance?: Attendance;
+  attendance?: AttendanceRecord;
   onMarkAttendance: (
     employeeId: number,
     status: "present" | "absent" | "late"

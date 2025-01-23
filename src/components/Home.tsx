@@ -1,11 +1,6 @@
-"use client";
-
 import { theme } from "@/theme/colors";
 import { Card } from "./common/Card";
 import { styles } from "@/styles/components/home.styles";
-import { useState } from "react";
-import { employees as initialEmployees } from "@/data/dummy";
-import { Employee } from "@/types";
 
 const DASHBOARD_CARDS = [
   {
@@ -86,16 +81,6 @@ const DASHBOARD_CARDS = [
 ];
 
 export function Home() {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
-
-  const handleUpdateEmployee = (updatedEmployee: Employee) => {
-    setEmployees(
-      employees.map((emp) =>
-        emp.id === updatedEmployee.id ? updatedEmployee : emp
-      )
-    );
-  };
-
   return (
     <div className={styles.wrapper}>
       {/* Background Elements */}
@@ -143,14 +128,6 @@ export function Home() {
                 title={card.title}
                 description={card.description}
                 accentColor={card.accentColor}
-                state={
-                  card.href === "/employees"
-                    ? {
-                        employees,
-                        onUpdateEmployee: handleUpdateEmployee,
-                      }
-                    : undefined
-                }
               />
             </div>
           ))}

@@ -1,16 +1,16 @@
-import { Employee, Attendance } from "@/types";
+import { Employee, AttendanceRecord } from "@/types";
 import { AttendanceActions } from "./AttendanceActions";
 
-type AttendanceCardProps = {
+interface AttendanceCardProps {
   employee: Employee;
-  attendance?: Attendance;
+  attendance?: AttendanceRecord;
   onMarkAttendance: (
     employeeId: number,
     status: "present" | "absent" | "late"
   ) => void;
   isSelected: boolean;
   onToggleSelect: () => void;
-};
+}
 
 export function AttendanceCard({
   employee,
