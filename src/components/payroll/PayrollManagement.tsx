@@ -17,6 +17,13 @@ export function PayrollManagement() {
   const [payrollData, setPayrollData] = useState(employeePayrolls);
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  // Add console.log to debug
+  console.log({
+    selectedMonth,
+    payrollData,
+    filteredPayroll: payrollData.filter((p) => p.month === selectedMonth),
+  });
+
   const handlePayrollUpdate = (
     employeeId: number,
     updatedPayroll: EmployeePayroll

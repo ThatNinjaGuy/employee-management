@@ -7,13 +7,22 @@ export function PayrollHeader({
   selectedMonth,
   onMonthChange,
 }: PayrollHeaderProps) {
-  const currentDate = new Date();
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const date = new Date(currentDate.getFullYear(), i);
-    return {
-      value: date.toISOString().slice(0, 7),
-      label: date.toLocaleString("default", { month: "long", year: "numeric" }),
-    };
+  // Generate an array of the next 24 months from now
+  const months = Array.from({ length: 24 }, (_, i) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() + i);
+
+    // Format to YYYY-MM and full month name
+    const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}`;
+    const label = date.toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+    });
+
+    return { value, label };
   });
 
   return (

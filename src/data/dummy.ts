@@ -113,7 +113,7 @@ export const employeeAttendance: EmployeeAttendance[] = [
 export const employeePayrolls: EmployeePayroll[] = [
   {
     employeeId: 1,
-    month: "2024-03",
+    month: "2025-01",
     basicWage: 22100, // 26 days * 850 (skilled min wage)
     overtime: {
       hours: 12,
