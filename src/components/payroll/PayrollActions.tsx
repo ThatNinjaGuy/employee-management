@@ -95,20 +95,15 @@ export function PayrollActions({
 
   return (
     <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-      <div className="flex gap-4">
-        <button className="px-4 py-2 bg-accent-main text-white rounded-xl hover:bg-accent-light transition-colors duration-300">
-          Generate Payslips
-        </button>
-        <button
-          onClick={() => {
-            console.log("Button clicked");
-            handleExportReport();
-          }}
-          className="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors duration-300"
-        >
-          Export Report
-        </button>
-      </div>
+      <button
+        onClick={() => {
+          console.log("Button clicked");
+          handleExportReport();
+        }}
+        className="px-4 py-2 bg-green-500/30 text-white rounded-xl hover:bg-green-500/50 transition-colors duration-300 cursor-pointer"
+      >
+        Export Report
+      </button>
 
       <div className="flex gap-4 w-full sm:w-auto">
         <div className="relative flex-1 sm:flex-initial">
