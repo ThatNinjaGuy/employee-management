@@ -1,4 +1,4 @@
-import { Employee, EmployeeAttendance } from "@/types";
+import { Employee, EmployeeAttendance, EmployeePayroll } from "@/types";
 
 export const employees: Employee[] = [
   {
@@ -108,4 +108,31 @@ export const employeeAttendance: EmployeeAttendance[] = [
     ],
   },
   // Add more attendance records as needed
+];
+
+export const employeePayrolls: EmployeePayroll[] = [
+  {
+    employeeId: 1,
+    month: "2024-03",
+    basicWage: 22100, // 26 days * 850 (skilled min wage)
+    overtime: {
+      hours: 12,
+      amount: 2550, // (850/8) * 2 * 12
+    },
+    allowances: {
+      food: 2600, // 26 days * 100
+      travel: 2080, // 26 days * 80
+    },
+    advances: {
+      taken: 10000,
+      recovered: 2000,
+      balance: 8000,
+    },
+    deductions: {
+      advances: 2000,
+      other: 500,
+    },
+    netPayable: 26830, // basic + overtime + allowances - deductions
+  },
+  // Add more dummy payroll records...
 ];
