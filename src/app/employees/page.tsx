@@ -1,3 +1,5 @@
+"use client";
+
 import { EmployeeManagement } from "@/components/employees/EmployeeManagement";
 
 export default function EmployeesPage() {

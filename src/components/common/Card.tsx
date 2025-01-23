@@ -1,13 +1,20 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { styles } from "@/styles/components/card.styles";
+import { Employee } from "@/types";
+
+interface CardState {
+  employees: Employee[];
+  onUpdateEmployee: (employee: Employee) => void;
+}
 
 interface CardProps {
-  href?: string;
-  icon?: ReactNode;
-  title?: string;
-  description?: string;
-  accentColor?: string;
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  accentColor: string;
+  state?: CardState;
   className?: string;
   children?: ReactNode;
 }
@@ -18,9 +25,13 @@ export function Card({
   title,
   description,
   accentColor = "",
+  state,
   className,
   children,
 }: CardProps) {
+  const encodedState = state ? encodeURIComponent(JSON.stringify(state)) : "";
+  const finalHref = state ? `${href}?state=${encodedState}` : href;
+
   const content = (
     <div className={`${styles.container} ${className || ""}`}>
       {children || (
@@ -56,5 +67,5 @@ export function Card({
     </div>
   );
 
-  return href ? <Link href={href}>{content}</Link> : content;
+  return <Link href={finalHref}>{content}</Link>;
 }

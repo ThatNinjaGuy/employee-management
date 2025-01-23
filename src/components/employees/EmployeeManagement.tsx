@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { employees as initialEmployees } from "@/data/dummy";
-import { Employee } from "@/types";
+import { useEmployees } from "@/context/EmployeeContext";
 import { EmployeeCard } from "./EmployeeCard";
 import { EmployeeEditForm } from "./EmployeeEditForm";
 import { EmployeeFilters } from "./EmployeeFilters";
+import { Employee } from "@/types";
 
 export function EmployeeManagement() {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const { employees, updateEmployee } = useEmployees();
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
@@ -61,11 +61,7 @@ export function EmployeeManagement() {
                 <EmployeeEditForm
                   employee={employee}
                   onSave={(updated) => {
-                    setEmployees(
-                      employees.map((emp) =>
-                        emp.id === updated.id ? updated : emp
-                      )
-                    );
+                    updateEmployee(updated);
                     setEditingEmployee(null);
                   }}
                   onCancel={() => setEditingEmployee(null)}
