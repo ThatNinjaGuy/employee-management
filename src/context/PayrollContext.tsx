@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import { EmployeePayroll } from "@/types";
 import { payrollService } from "@/services/payrollService";
-import { useToast } from "./ToastContext";
 
 interface PayrollContextType {
   payrollData: EmployeePayroll[];
@@ -19,57 +18,49 @@ export function PayrollProvider({ children }: { children: React.ReactNode }) {
   const [payrollData, setPayrollData] = useState<EmployeePayroll[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { showToast } = useToast();
 
-  const fetchPayrollByMonth = useCallback(
-    async (month: string) => {
-      try {
-        setLoading(true);
-        const data = await payrollService.getPayrollByMonth(month);
-        setPayrollData(data);
-        setError(null);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch payroll data";
-        setError(errorMessage);
-        showToast(errorMessage, "error");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [showToast]
-  );
+  const fetchPayrollByMonth = useCallback(async (month: string) => {
+    try {
+      setLoading(true);
+      const data = await payrollService.getPayrollByMonth(month);
+      setPayrollData(data);
+      setError(null);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch payroll data";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const updatePayroll = useCallback(
-    async (payroll: EmployeePayroll) => {
-      try {
-        setLoading(true);
-        await payrollService.updatePayroll(payroll);
+  const updatePayroll = useCallback(async (payroll: EmployeePayroll) => {
+    try {
+      setLoading(true);
+      await payrollService.updatePayroll(payroll);
 
-        // Update the payroll in the current state instead of refetching
-        setPayrollData((prev) => {
-          const index = prev.findIndex((p) => p.id === payroll.id);
-          if (index === -1) {
-            return [...prev, payroll];
-          }
-          const updated = [...prev];
-          updated[index] = payroll;
-          return updated;
-        });
+      // Update the payroll in the current state instead of refetching
+      setPayrollData((prev) => {
+        const index = prev.findIndex((p) => p.id === payroll.id);
+        if (index === -1) {
+          return [...prev, payroll];
+        }
+        const updated = [...prev];
+        updated[index] = payroll;
+        return updated;
+      });
 
-        setError(null);
-        showToast("Payroll updated successfully", "success");
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to update payroll";
-        setError(errorMessage);
-        showToast(errorMessage, "error");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [showToast]
-  );
+      setError(null);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update payroll";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return (
     <PayrollContext.Provider
