@@ -7,6 +7,7 @@ import { EmployeeFilters } from "./EmployeeFilters";
 import { useEmployees } from "@/context/EmployeeContext";
 import { departments } from "@/data/dummy";
 import { Employee } from "@/types";
+import { useToast } from "@/context/ToastContext";
 
 export function EmployeeManagement() {
   const { employees, loading, error, fetchEmployees, updateEmployee } =
@@ -14,17 +15,14 @@ export function EmployeeManagement() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
-  const [localEmployees, setLocalEmployees] = useState<Employee[]>([]);
+
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  useEffect(() => {
-    setLocalEmployees(employees);
-  }, [employees]);
-
-  const filteredEmployees = localEmployees.filter((employee) => {
+  const filteredEmployees = employees.filter((employee) => {
     const matchesSearch = employee.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
@@ -37,12 +35,11 @@ export function EmployeeManagement() {
   const handleSave = async (employee: Employee) => {
     try {
       await updateEmployee(employee);
-      setLocalEmployees((prev) =>
-        prev.map((emp) => (emp.id === employee.id ? employee : emp))
-      );
       setEditingEmployee(null);
+      showToast("Employee updated successfully", "success");
     } catch (error) {
       console.error("Failed to update employee:", error);
+      showToast("Failed to update employee", "error");
     }
   };
 

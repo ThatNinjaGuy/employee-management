@@ -1,35 +1,4 @@
-import { Employee, EmployeeAttendance } from "@/types";
-
-export const employees: Employee[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john@example.com",
-    position: "Software Engineer",
-    department: "Engineering",
-    joinDate: "2023-01-15",
-    hourlyRate: 212.5, // 850/8 * 2 (double rate for overtime)
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    position: "HR Manager",
-    department: "Human Resources",
-    joinDate: "2022-11-01",
-    hourlyRate: 225,
-  },
-  {
-    id: 3,
-    name: "Mike Wilson",
-    email: "mike@example.com",
-    position: "Product Manager",
-    department: "Product",
-    joinDate: "2023-03-20",
-    hourlyRate: 225,
-  },
-  // Add more dummy employees as needed
-];
+import { EmployeeAttendance } from "@/types";
 
 export const employeeAttendance: EmployeeAttendance[] = [
   {

@@ -24,14 +24,11 @@ export function PayrollProvider({ children }: { children: React.ReactNode }) {
   const fetchPayrollByMonth = useCallback(
     async (month: string) => {
       try {
-        console.log("🎯 PayrollContext fetching month:", month); // Debug log
         setLoading(true);
         const data = await payrollService.getPayrollByMonth(month);
-        console.log("📦 PayrollContext received data:", data); // Debug log
         setPayrollData(data);
         setError(null);
       } catch (err) {
-        console.error("💥 PayrollContext error:", err); // Better error log
         const errorMessage =
           err instanceof Error ? err.message : "Failed to fetch payroll data";
         setError(errorMessage);
