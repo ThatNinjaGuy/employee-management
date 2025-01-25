@@ -55,6 +55,7 @@ export interface PayrollConfig {
 }
 
 export interface EmployeePayroll {
+  id?: string;
   employeeId: number;
   month: string; // YYYY-MM format
   basicWage: number; // daily wage * working days
@@ -66,14 +67,14 @@ export interface EmployeePayroll {
     food: number;
     travel: number;
   };
+  deductions: {
+    advances: number;
+    other: number;
+  };
   advances: {
     taken: number;
     recovered: number;
     balance: number;
-  };
-  deductions: {
-    advances: number;
-    other: number;
   };
   netPayable: number;
 }

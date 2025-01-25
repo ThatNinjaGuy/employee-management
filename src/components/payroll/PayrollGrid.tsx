@@ -45,6 +45,12 @@ export function PayrollGrid({
   searchTerm,
   selectedDepartment,
 }: PayrollGridProps) {
+  console.log("🔍 PayrollGrid received data:", {
+    month: selectedMonth,
+    payrollCount: payrollData.length,
+    payrolls: payrollData,
+  });
+
   const { employees } = useEmployees();
   const { updatePayroll } = usePayroll();
   const { showToast } = useToast();
@@ -55,19 +61,24 @@ export function PayrollGrid({
   // Initialize local state with context data
   useEffect(() => {
     const initialData = employees.map((employee) => {
-      const payroll = payrollData.find(
+      const existingPayroll = payrollData.find(
         (p) => p.employeeId === employee.id && p.month === selectedMonth
-      ) || {
+      );
+
+      if (existingPayroll) {
+        return existingPayroll;
+      }
+
+      return {
         employeeId: employee.id,
         month: selectedMonth,
         basicWage: 0,
         overtime: { hours: 0, amount: 0 },
         allowances: { food: 0, travel: 0 },
         deductions: { advances: 0, other: 0 },
-        netPayable: 0,
         advances: { taken: 0, recovered: 0, balance: 0 },
+        netPayable: 0,
       };
-      return payroll;
     });
     setLocalPayrollData(initialData);
   }, [selectedMonth, payrollData, employees]);
@@ -96,7 +107,13 @@ export function PayrollGrid({
       }
     }
 
+    // Find existing payroll to get the document id
+    const existingPayroll = payrollData.find(
+      (p) => p.employeeId === updatedData.id && p.month === selectedMonth
+    );
+
     const tempPayroll: EmployeePayroll = {
+      id: existingPayroll?.id, // Include the document id if it exists
       employeeId: updatedData.id,
       month: selectedMonth,
       basicWage: updatedData.basicWage || 0,
@@ -112,13 +129,16 @@ export function PayrollGrid({
         advances: updatedData.advanceDeductions || 0,
         other: updatedData.otherDeductions || 0,
       },
+      advances: {
+        taken: updatedData.advanceDeductions || 0,
+        recovered: 0,
+        balance: updatedData.advanceDeductions || 0,
+      },
       netPayable: 0,
-      advances: updatedData.advanceDeductions || 0,
     };
 
     tempPayroll.netPayable = calculateNetPayable(tempPayroll);
 
-    // Update local state instead of context
     setLocalPayrollData((prev) => {
       const index = prev.findIndex(
         (p) =>

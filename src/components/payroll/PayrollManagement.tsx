@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PayrollHeader } from "./PayrollHeader";
 import { PayrollGrid } from "./PayrollGrid";
 import { exportPayrollToExcel } from "@/utils/excelExport";
@@ -10,14 +10,37 @@ import { useToast } from "@/context/ToastContext";
 
 export function PayrollManagement() {
   const { employees } = useEmployees();
-  const { payrollData } = usePayroll();
+  const { payrollData, loading, error, fetchPayrollByMonth } = usePayroll();
   const [selectedMonth, setSelectedMonth] = useState<string>(
     new Date().toISOString().slice(0, 7)
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const prevMonthRef = useRef<string | null>(null);
 
   const { showToast } = useToast();
+
+  useEffect(() => {
+    console.log(
+      "🔄 useEffect triggered with selectedMonth:",
+      selectedMonth,
+      "and prevMonthRef:",
+      prevMonthRef.current
+    );
+    if (prevMonthRef.current !== selectedMonth) {
+      console.log("🚀 Triggering fetch for month:", selectedMonth);
+      console.log(
+        "🔄 fetchPayrollByMonth function:",
+        typeof fetchPayrollByMonth
+      );
+      fetchPayrollByMonth(selectedMonth);
+      prevMonthRef.current = selectedMonth;
+    }
+  }, [selectedMonth, fetchPayrollByMonth]);
+
+  useEffect(() => {
+    console.log("📅 Initial month:", selectedMonth);
+  }, [selectedMonth]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -25,6 +48,11 @@ export function PayrollManagement() {
 
   const handleDepartmentChange = (department: string) => {
     setSelectedDepartment(department);
+  };
+
+  const handleMonthChange = (month: string) => {
+    console.log("🗓️ Changing month to:", month);
+    setSelectedMonth(month);
   };
 
   const handleExportReport = () => {
@@ -65,19 +93,27 @@ export function PayrollManagement() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <PayrollHeader
           selectedMonth={selectedMonth}
-          onMonthChange={setSelectedMonth}
+          onMonthChange={handleMonthChange}
           onSearch={handleSearch}
           onDepartmentChange={handleDepartmentChange}
           handleExportReport={handleExportReport}
         />
 
         <div className="mt-8 pb-24">
-          <PayrollGrid
-            selectedMonth={selectedMonth}
-            payrollData={payrollData}
-            searchTerm={searchTerm}
-            selectedDepartment={selectedDepartment}
-          />
+          {loading ? (
+            <div className="flex justify-center items-center h-[600px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-main"></div>
+            </div>
+          ) : error ? (
+            <div className="text-red-500 text-center">{error}</div>
+          ) : (
+            <PayrollGrid
+              selectedMonth={selectedMonth}
+              payrollData={payrollData}
+              searchTerm={searchTerm}
+              selectedDepartment={selectedDepartment}
+            />
+          )}
         </div>
       </div>
     </div>
