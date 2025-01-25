@@ -150,6 +150,7 @@ export function PayrollGrid({
       });
       showToast("Payroll updated successfully", "success");
     } catch (error) {
+      console.error("Failed to update payroll", error);
       showToast("Failed to update payroll", "error");
     }
   };
