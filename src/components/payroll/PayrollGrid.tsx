@@ -14,6 +14,7 @@ import {
 } from "ag-grid-community";
 import { EmployeePayroll } from "@/types";
 import { useEmployees } from "@/context/EmployeeContext";
+import { usePayroll } from "@/context/PayrollContext";
 
 // Register all required modules
 ModuleRegistry.registerModules([
@@ -29,7 +30,6 @@ ModuleRegistry.registerModules([
 interface PayrollGridProps {
   selectedMonth: string;
   payrollData: EmployeePayroll[];
-  setPayrollData: React.Dispatch<React.SetStateAction<EmployeePayroll[]>>;
   searchTerm: string;
   selectedDepartment: string;
 }
@@ -37,11 +37,11 @@ interface PayrollGridProps {
 export function PayrollGrid({
   selectedMonth,
   payrollData,
-  setPayrollData,
   searchTerm,
   selectedDepartment,
 }: PayrollGridProps) {
   const { employees } = useEmployees();
+  const { updatePayroll } = usePayroll();
 
   const calculateNetPayable = (payroll: EmployeePayroll) => {
     return (
@@ -89,18 +89,7 @@ export function PayrollGrid({
 
     tempPayroll.netPayable = calculateNetPayable(tempPayroll);
 
-    setPayrollData((prev: EmployeePayroll[]) => {
-      const index = prev.findIndex(
-        (p: EmployeePayroll) =>
-          p.employeeId === tempPayroll.employeeId && p.month === selectedMonth
-      );
-      if (index === -1) {
-        return [...prev, tempPayroll];
-      }
-      const newData = [...prev];
-      newData[index] = tempPayroll;
-      return newData;
-    });
+    updatePayroll(tempPayroll);
 
     params.data[field] = newValue;
     params.data.netPayable = tempPayroll.netPayable;

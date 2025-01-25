@@ -1,20 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { employeePayrolls } from "@/data/dummy";
 import { PayrollHeader } from "./PayrollHeader";
 import { PayrollGrid } from "./PayrollGrid";
 import { utils, writeFile } from "xlsx";
 import { useEmployees } from "@/context/EmployeeContext";
+import { usePayroll } from "@/context/PayrollContext";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
 export function PayrollManagement() {
   const { employees } = useEmployees();
+  const { payrollData } = usePayroll();
   const [selectedMonth, setSelectedMonth] = useState<string>(
     new Date().toISOString().slice(0, 7)
   );
-  const [payrollData, setPayrollData] = useState(employeePayrolls);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
 
@@ -110,7 +110,6 @@ export function PayrollManagement() {
           <PayrollGrid
             selectedMonth={selectedMonth}
             payrollData={payrollData}
-            setPayrollData={setPayrollData}
             searchTerm={searchTerm}
             selectedDepartment={selectedDepartment}
           />
