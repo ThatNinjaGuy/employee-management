@@ -104,7 +104,7 @@ export function PayrollManagement() {
           handleExportReport={handleExportReport}
         />
 
-        <div className="mt-8 h-[600px] w-full">
+        <div className="mt-8 pb-24">
           <PayrollGrid
             selectedMonth={selectedMonth}
             payrollData={payrollData}

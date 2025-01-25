@@ -18,6 +18,8 @@ import { usePayroll } from "@/context/PayrollContext";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "@/styles/ag-grid-custom.css";
+import { useState, useEffect } from "react";
+import { useToast } from "@/context/ToastContext";
 
 // Register all required modules
 ModuleRegistry.registerModules([
@@ -45,6 +47,30 @@ export function PayrollGrid({
 }: PayrollGridProps) {
   const { employees } = useEmployees();
   const { updatePayroll } = usePayroll();
+  const { showToast } = useToast();
+  const [localPayrollData, setLocalPayrollData] = useState<EmployeePayroll[]>(
+    []
+  );
+
+  // Initialize local state with context data
+  useEffect(() => {
+    const initialData = employees.map((employee) => {
+      const payroll = payrollData.find(
+        (p) => p.employeeId === employee.id && p.month === selectedMonth
+      ) || {
+        employeeId: employee.id,
+        month: selectedMonth,
+        basicWage: 0,
+        overtime: { hours: 0, amount: 0 },
+        allowances: { food: 0, travel: 0 },
+        deductions: { advances: 0, other: 0 },
+        netPayable: 0,
+        advances: { taken: 0, recovered: 0, balance: 0 },
+      };
+      return payroll;
+    });
+    setLocalPayrollData(initialData);
+  }, [selectedMonth, payrollData, employees]);
 
   const calculateNetPayable = (payroll: EmployeePayroll) => {
     return (
@@ -92,7 +118,17 @@ export function PayrollGrid({
 
     tempPayroll.netPayable = calculateNetPayable(tempPayroll);
 
-    updatePayroll(tempPayroll);
+    // Update local state instead of context
+    setLocalPayrollData((prev) => {
+      const index = prev.findIndex(
+        (p) =>
+          p.employeeId === tempPayroll.employeeId && p.month === selectedMonth
+      );
+      if (index === -1) return [...prev, tempPayroll];
+      const newData = [...prev];
+      newData[index] = tempPayroll;
+      return newData;
+    });
 
     params.data[field] = newValue;
     params.data.netPayable = tempPayroll.netPayable;
@@ -105,6 +141,17 @@ export function PayrollGrid({
     }
 
     return true;
+  };
+
+  const handleSavePayroll = () => {
+    try {
+      localPayrollData.forEach((payroll) => {
+        updatePayroll(payroll);
+      });
+      showToast("Payroll updated successfully", "success");
+    } catch (error) {
+      showToast("Failed to update payroll", "error");
+    }
   };
 
   const defaultColDef = {
@@ -218,7 +265,7 @@ export function PayrollGrid({
       return matchesSearch && matchesDepartment;
     })
     .map((employee) => {
-      const payroll = payrollData.find(
+      const payroll = localPayrollData.find(
         (p) => p.employeeId === employee.id && p.month === selectedMonth
       ) || {
         employeeId: employee.id,
@@ -227,6 +274,7 @@ export function PayrollGrid({
         overtime: { hours: 0, amount: 0 },
         allowances: { food: 0, travel: 0 },
         deductions: { advances: 0, other: 0 },
+        advances: { taken: 0, recovered: 0, balance: 0 },
       };
 
       return {
@@ -245,24 +293,34 @@ export function PayrollGrid({
     });
 
   return (
-    <div
-      className="ag-theme-alpine-dark rounded-2xl overflow-hidden backdrop-blur-md border border-white/10"
-      style={{ height: "600px", width: "100%" }}
-    >
-      <AgGridReact
-        rowData={rowData}
-        columnDefs={columnDefs}
-        defaultColDef={{
-          ...defaultColDef,
-          cellClass: "text-white/90",
-          headerClass: "text-white/90",
-        }}
-        animateRows={true}
-        suppressClickEdit={false}
-        rowHeight={80}
-        headerHeight={48}
-        theme="legacy"
-      />
+    <div className="relative space-y-4">
+      <div
+        className="ag-theme-alpine-dark rounded-2xl overflow-hidden backdrop-blur-md border border-white/10"
+        style={{ height: "600px", width: "100%" }}
+      >
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={{
+            ...defaultColDef,
+            cellClass: "text-white/90",
+            headerClass: "text-white/90",
+          }}
+          animateRows={true}
+          suppressClickEdit={false}
+          rowHeight={80}
+          headerHeight={48}
+          theme="legacy"
+        />
+      </div>
+      <div className="fixed bottom-8 left-0 right-0 flex justify-center z-20">
+        <button
+          onClick={handleSavePayroll}
+          className="px-6 py-3 bg-accent-main text-primary-darkest font-medium rounded-lg hover:bg-accent-light transition-colors shadow-lg backdrop-blur-sm"
+        >
+          Update Payroll
+        </button>
+      </div>
     </div>
   );
 }

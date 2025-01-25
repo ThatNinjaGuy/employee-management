@@ -4,6 +4,7 @@ import "./globals.css";
 import { EmployeeProvider } from "@/context/EmployeeContext";
 import { AttendanceProvider } from "@/context/AttendanceContext";
 import { PayrollProvider } from "@/context/PayrollContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,11 +31,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <EmployeeProvider>
-          <PayrollProvider>
-            <AttendanceProvider>{children}</AttendanceProvider>
-          </PayrollProvider>
-        </EmployeeProvider>
+        <ToastProvider>
+          <EmployeeProvider>
+            <PayrollProvider>
+              <AttendanceProvider>{children}</AttendanceProvider>
+            </PayrollProvider>
+          </EmployeeProvider>
+        </ToastProvider>
       </body>
     </html>
   );
