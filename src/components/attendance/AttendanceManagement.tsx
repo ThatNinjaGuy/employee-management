@@ -5,6 +5,7 @@ import { useEmployees } from "@/context/EmployeeContext";
 import { useAttendance } from "@/context/AttendanceContext";
 import { AttendanceHeader } from "./AttendanceHeader";
 import { AttendanceCard } from "./AttendanceCard";
+import { departments } from "@/data/dummy";
 
 export function AttendanceManagement() {
   const { employees } = useEmployees();
@@ -16,10 +17,6 @@ export function AttendanceManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
-
-  const departments = Array.from(
-    new Set(employees.map((emp) => emp.department))
-  );
 
   const filteredEmployees = employees.filter((employee) => {
     const matchesSearch = employee.name

@@ -1,3 +1,5 @@
+import { departments } from "@/data/dummy";
+
 interface PayrollHeaderProps {
   selectedMonth: string; // YYYY-MM format
   onMonthChange: (month: string) => void;
@@ -49,9 +51,15 @@ export function PayrollHeader({
               className={`${inputClasses}`}
             >
               <option value="">All Departments</option>
-              <option value="Engineering">Engineering</option>
-              <option value="Product">Product</option>
-              <option value="Human Resources">Human Resources</option>
+              {departments.map((department) => (
+                <option
+                  key={department}
+                  value={department}
+                  className="text-primary-darkest"
+                >
+                  {department}
+                </option>
+              ))}
             </select>
           </div>
           <div className="w-full sm:w-44">

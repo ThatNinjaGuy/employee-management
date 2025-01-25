@@ -139,3 +139,14 @@ export const employeePayrolls: EmployeePayroll[] = [
   },
   // Add more dummy payroll records...
 ];
+
+export const departments = [
+  "Engineering",
+  "Sales",
+  "Marketing",
+  "Human Resources",
+  "Finance",
+  "Operations",
+  "Product",
+  "Design",
+];

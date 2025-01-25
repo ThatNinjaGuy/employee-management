@@ -6,16 +6,13 @@ import { EmployeeCard } from "./EmployeeCard";
 import { EmployeeEditForm } from "./EmployeeEditForm";
 import { EmployeeFilters } from "./EmployeeFilters";
 import { Employee } from "@/types";
+import { departments } from "@/data/dummy";
 
 export function EmployeeManagement() {
   const { employees, updateEmployee } = useEmployees();
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
-
-  const departments = Array.from(
-    new Set(employees.map((emp) => emp.department))
-  );
 
   const filteredEmployees = employees.filter((employee) => {
     const matchesSearch = employee.name
