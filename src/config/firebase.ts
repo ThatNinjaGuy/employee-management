@@ -11,14 +11,7 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-console.log("🔥 Initializing Firebase with config:", {
-  projectId: firebaseConfig.projectId,
-  hasApiKey: !!firebaseConfig.apiKey,
-});
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-console.log("✅ Firebase initialized, db instance created");
 
 export { db };

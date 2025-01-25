@@ -45,12 +45,6 @@ export function PayrollGrid({
   searchTerm,
   selectedDepartment,
 }: PayrollGridProps) {
-  console.log("🔍 PayrollGrid received data:", {
-    month: selectedMonth,
-    payrollCount: payrollData.length,
-    payrolls: payrollData,
-  });
-
   const { employees } = useEmployees();
   const { updatePayroll } = usePayroll();
   const { showToast } = useToast();

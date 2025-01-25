@@ -9,7 +9,7 @@ import { usePayroll } from "@/context/PayrollContext";
 import { useToast } from "@/context/ToastContext";
 
 export function PayrollManagement() {
-  const { employees } = useEmployees();
+  const { employees, fetchEmployees } = useEmployees();
   const { payrollData, loading, error, fetchPayrollByMonth } = usePayroll();
   const [selectedMonth, setSelectedMonth] = useState<string>(
     new Date().toISOString().slice(0, 7)
@@ -20,27 +20,18 @@ export function PayrollManagement() {
 
   const { showToast } = useToast();
 
+  // Fetch employees on mount
   useEffect(() => {
-    console.log(
-      "🔄 useEffect triggered with selectedMonth:",
-      selectedMonth,
-      "and prevMonthRef:",
-      prevMonthRef.current
-    );
+    fetchEmployees();
+  }, [fetchEmployees]);
+
+  // Fetch payroll data when month changes
+  useEffect(() => {
     if (prevMonthRef.current !== selectedMonth) {
-      console.log("🚀 Triggering fetch for month:", selectedMonth);
-      console.log(
-        "🔄 fetchPayrollByMonth function:",
-        typeof fetchPayrollByMonth
-      );
       fetchPayrollByMonth(selectedMonth);
       prevMonthRef.current = selectedMonth;
     }
   }, [selectedMonth, fetchPayrollByMonth]);
-
-  useEffect(() => {
-    console.log("📅 Initial month:", selectedMonth);
-  }, [selectedMonth]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -51,7 +42,6 @@ export function PayrollManagement() {
   };
 
   const handleMonthChange = (month: string) => {
-    console.log("🗓️ Changing month to:", month);
     setSelectedMonth(month);
   };
 

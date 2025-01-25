@@ -1,20 +1,30 @@
 "use client";
 
-import { useState } from "react";
-import { useEmployees } from "@/context/EmployeeContext";
+import { useState, useEffect } from "react";
 import { EmployeeCard } from "./EmployeeCard";
 import { EmployeeEditForm } from "./EmployeeEditForm";
 import { EmployeeFilters } from "./EmployeeFilters";
-import { Employee } from "@/types";
+import { useEmployees } from "@/context/EmployeeContext";
 import { departments } from "@/data/dummy";
+import { Employee } from "@/types";
 
 export function EmployeeManagement() {
-  const { employees, updateEmployee } = useEmployees();
+  const { employees, loading, error, fetchEmployees, updateEmployee } =
+    useEmployees();
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [localEmployees, setLocalEmployees] = useState<Employee[]>([]);
 
-  const filteredEmployees = employees.filter((employee) => {
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
+
+  useEffect(() => {
+    setLocalEmployees(employees);
+  }, [employees]);
+
+  const filteredEmployees = localEmployees.filter((employee) => {
     const matchesSearch = employee.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
@@ -23,6 +33,34 @@ export function EmployeeManagement() {
       : true;
     return matchesSearch && matchesDepartment;
   });
+
+  const handleSave = async (employee: Employee) => {
+    try {
+      await updateEmployee(employee);
+      setLocalEmployees((prev) =>
+        prev.map((emp) => (emp.id === employee.id ? employee : emp))
+      );
+      setEditingEmployee(null);
+    } catch (error) {
+      console.error("Failed to update employee:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-main"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main flex justify-center items-center">
+        <div className="text-red-500 text-center">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main relative">
@@ -57,10 +95,7 @@ export function EmployeeManagement() {
               {editingEmployee?.id === employee.id ? (
                 <EmployeeEditForm
                   employee={employee}
-                  onSave={(updated) => {
-                    updateEmployee(updated);
-                    setEditingEmployee(null);
-                  }}
+                  onSave={handleSave}
                   onCancel={() => setEditingEmployee(null)}
                 />
               ) : (

@@ -1,4 +1,5 @@
 export interface Employee {
+  docId?: string;
   id: number;
   name: string;
   email: string;
