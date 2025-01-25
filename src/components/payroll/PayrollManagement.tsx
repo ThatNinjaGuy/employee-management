@@ -6,8 +6,6 @@ import { PayrollGrid } from "./PayrollGrid";
 import { utils, writeFile } from "xlsx";
 import { useEmployees } from "@/context/EmployeeContext";
 import { usePayroll } from "@/context/PayrollContext";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
 
 export function PayrollManagement() {
   const { employees } = useEmployees();

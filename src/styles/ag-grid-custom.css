@@ -1,0 +1,81 @@
+.ag-theme-alpine-dark {
+  --ag-background-color: rgba(
+    17,
+    24,
+    39,
+    0.7
+  ); /* primary-darkest with opacity */
+  --ag-border-color: rgba(255, 255, 255, 0.1);
+  --ag-header-background-color: rgba(
+    31,
+    41,
+    55,
+    0.8
+  ); /* primary-dark with opacity */
+  --ag-odd-row-background-color: rgba(
+    55,
+    65,
+    81,
+    0.3
+  ); /* primary-main with opacity */
+  --ag-header-foreground-color: rgba(255, 255, 255, 0.9);
+  --ag-foreground-color: rgba(255, 255, 255, 0.9);
+  --ag-secondary-foreground-color: rgba(255, 255, 255, 0.7);
+  --ag-alpine-active-color: #22d3ee; /* accent-main */
+  --ag-selected-row-background-color: rgba(
+    31,
+    41,
+    55,
+    0.5
+  ); /* primary-dark with opacity */
+  --ag-row-hover-color: rgba(55, 65, 81, 0.4); /* primary-main with opacity */
+  --ag-column-hover-color: rgba(55, 65, 81, 0.4);
+  --ag-input-focus-border-color: #22d3ee; /* accent-main */
+  --ag-range-selection-border-color: #22d3ee; /* accent-main */
+  --ag-range-selection-background-color: rgba(
+    34,
+    211,
+    238,
+    0.2
+  ); /* accent-main with opacity */
+  --ag-cell-horizontal-padding: 1rem;
+  --ag-borders: none;
+  --ag-row-border-width: 0;
+  --ag-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.ag-theme-alpine-dark .ag-header-cell {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.ag-theme-alpine-dark .ag-cell {
+  font-size: 0.9rem;
+}
+
+.ag-theme-alpine-dark .ag-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.3s;
+}
+
+.ag-theme-alpine-dark .ag-row:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.ag-theme-alpine-dark .ag-cell-focus {
+  border: 1px solid var(--accent-main) !important;
+}
+
+.ag-theme-alpine-dark input {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 0.5rem;
+}
+
+.ag-theme-alpine-dark input:focus {
+  border-color: var(--accent-main);
+  box-shadow: 0 0 0 2px rgba(var(--accent-main-rgb), 0.2);
+}

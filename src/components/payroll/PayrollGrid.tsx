@@ -15,6 +15,9 @@ import {
 import { EmployeePayroll } from "@/types";
 import { useEmployees } from "@/context/EmployeeContext";
 import { usePayroll } from "@/context/PayrollContext";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import "@/styles/ag-grid-custom.css";
 
 // Register all required modules
 ModuleRegistry.registerModules([
@@ -104,19 +107,38 @@ export function PayrollGrid({
     return true;
   };
 
+  const defaultColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true,
+    cellStyle: {
+      display: "flex",
+      alignItems: "center",
+    },
+  };
+
+  const numericColDef = {
+    ...defaultColDef,
+    cellStyle: {
+      display: "flex",
+      alignItems: "center",
+    },
+  };
+
   const columnDefs: ColDef[] = [
     {
       field: "name",
       headerName: "Employee",
       editable: false,
       cellRenderer: (params: ICellRendererParams) => (
-        <div>
-          <div className="font-medium">{params.data.name}</div>
+        <div className="py-2">
+          <div className="font-medium mb-1">{params.data.name}</div>
           <div className="text-sm opacity-70">{params.data.position}</div>
         </div>
       ),
     },
     {
+      ...numericColDef,
       field: "basicWage",
       headerName: "Basic Wage",
       editable: true,
@@ -125,6 +147,7 @@ export function PayrollGrid({
         handleValueSetter(params, "basicWage"),
     },
     {
+      ...numericColDef,
       field: "overtimeHours",
       headerName: "Overtime Hours",
       editable: true,
@@ -132,6 +155,7 @@ export function PayrollGrid({
         handleValueSetter(params, "overtimeHours"),
     },
     {
+      ...numericColDef,
       field: "overtimeAmount",
       headerName: "Overtime Amount",
       editable: true,
@@ -140,6 +164,7 @@ export function PayrollGrid({
         handleValueSetter(params, "overtimeAmount"),
     },
     {
+      ...numericColDef,
       field: "foodAllowance",
       headerName: "Food Allowance",
       editable: true,
@@ -148,6 +173,7 @@ export function PayrollGrid({
         handleValueSetter(params, "foodAllowance"),
     },
     {
+      ...numericColDef,
       field: "travelAllowance",
       headerName: "Travel Allowance",
       editable: true,
@@ -156,6 +182,7 @@ export function PayrollGrid({
         handleValueSetter(params, "travelAllowance"),
     },
     {
+      ...numericColDef,
       field: "advanceDeductions",
       headerName: "Advances",
       editable: true,
@@ -164,6 +191,7 @@ export function PayrollGrid({
         handleValueSetter(params, "advanceDeductions"),
     },
     {
+      ...numericColDef,
       field: "otherDeductions",
       headerName: "Other Deductions",
       editable: true,
@@ -179,12 +207,6 @@ export function PayrollGrid({
       cellClass: "font-medium text-accent-main",
     },
   ];
-
-  const defaultColDef = {
-    sortable: true,
-    filter: true,
-    resizable: true,
-  };
 
   const rowData = employees
     .filter((employee) => {
@@ -224,16 +246,22 @@ export function PayrollGrid({
 
   return (
     <div
-      className="ag-theme-alpine-dark"
+      className="ag-theme-alpine-dark rounded-2xl overflow-hidden backdrop-blur-md border border-white/10"
       style={{ height: "600px", width: "100%" }}
     >
       <AgGridReact
-        theme="legacy"
         rowData={rowData}
         columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
+        defaultColDef={{
+          ...defaultColDef,
+          cellClass: "text-white/90",
+          headerClass: "text-white/90",
+        }}
         animateRows={true}
         suppressClickEdit={false}
+        rowHeight={80}
+        headerHeight={48}
+        theme="legacy"
       />
     </div>
   );
