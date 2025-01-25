@@ -85,7 +85,7 @@ export function PayrollHeader({
                 console.log("Button clicked");
                 handleExportReport();
               }}
-              className={`w-full ${inputClasses} bg-green-500/30 hover:bg-green-500/50`}
+              className={`w-full h-12 px-4 rounded-xl bg-accent-main border border-white/10 backdrop-blur-md text-primary-darkest hover:bg-accent-light transition-colors focus:outline-none focus:ring-2 focus:ring-accent-main/50`}
             >
               Export Report
             </button>
