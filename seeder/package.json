@@ -1,0 +1,18 @@
+{
+  "name": "employee-management-seeder",
+  "version": "1.0.0",
+  "description": "Data seeder for employee management system",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "seed": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "firebase": "^11.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.1",
+    "@types/node": "^20.0.0"
+  }
+}
