@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { PayrollHeader } from "./PayrollHeader";
 import { PayrollGrid } from "./PayrollGrid";
-import { utils, writeFile } from "xlsx";
+import { exportPayrollToExcel } from "@/utils/excelExport";
 import { useEmployees } from "@/context/EmployeeContext";
 import { usePayroll } from "@/context/PayrollContext";
+import { useToast } from "@/context/ToastContext";
 
 export function PayrollManagement() {
   const { employees } = useEmployees();
@@ -16,6 +17,8 @@ export function PayrollManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
 
+  const { showToast } = useToast();
+
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
@@ -25,43 +28,8 @@ export function PayrollManagement() {
   };
 
   const handleExportReport = () => {
-    try {
-      const exportData = employees.map((emp) => {
-        const payroll = payrollData.find((p) => p.employeeId === emp.id) || {
-          basicWage: 0,
-          overtime: { hours: 0, amount: 0 },
-          allowances: { food: 0, travel: 0 },
-          deductions: { advances: 0, other: 0 },
-          month: "-",
-        };
-
-        const netPayable =
-          payroll.basicWage +
-          payroll.overtime.amount -
-          payroll.allowances.food -
-          payroll.allowances.travel -
-          payroll.deductions.advances -
-          payroll.deductions.other;
-
-        return {
-          "Employee Name": emp.name,
-          Department: emp.department,
-          Position: emp.position,
-          Month: payroll.month || "-",
-          "Basic Wage": payroll.basicWage || 0,
-          "Overtime Hours": payroll.overtime?.hours || 0,
-          "Overtime Amount": payroll.overtime?.amount || 0,
-          "Food Allowance": payroll.allowances?.food || 0,
-          "Travel Allowance": payroll.allowances?.travel || 0,
-          "Advances Deduction": payroll.deductions?.advances || 0,
-          "Other Deductions": payroll.deductions?.other || 0,
-          "Net Payable": netPayable || 0,
-        };
-      });
-
-      // Configure column widths
-      const ws = utils.json_to_sheet(exportData);
-      const colWidths = [
+    const config = {
+      columnWidths: [
         { wch: 20 }, // Employee Name
         { wch: 15 }, // Department
         { wch: 20 }, // Position
@@ -74,19 +42,18 @@ export function PayrollManagement() {
         { wch: 12 }, // Advances Deduction
         { wch: 12 }, // Other Deductions
         { wch: 12 }, // Net Payable
-      ];
-      ws["!cols"] = colWidths;
+      ],
+      fileName: `payroll-report-${selectedMonth}${
+        selectedDepartment ? `-${selectedDepartment}` : ""
+      }-${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`,
+    };
 
-      const wb = utils.book_new();
-      utils.book_append_sheet(wb, ws, "Payroll Report");
+    const success = exportPayrollToExcel({ employees, payrollData }, config);
 
-      writeFile(
-        wb,
-        `payroll-report-${new Date().toISOString().split("T")[0]}.xlsx`
-      );
-    } catch (error) {
-      console.error("Export error:", error);
-      alert("Export failed. Check console for details.");
+    if (success) {
+      showToast("Report exported successfully", "success");
+    } else {
+      showToast("Failed to export report", "error");
     }
   };
 
