@@ -8,6 +8,7 @@ export const employees: Employee[] = [
     position: "Software Engineer",
     department: "Engineering",
     joinDate: "2023-01-15",
+    hourlyRate: 212.5, // 850/8 * 2 (double rate for overtime)
   },
   {
     id: 2,
@@ -16,6 +17,7 @@ export const employees: Employee[] = [
     position: "HR Manager",
     department: "Human Resources",
     joinDate: "2022-11-01",
+    hourlyRate: 225,
   },
   {
     id: 3,
@@ -24,6 +26,7 @@ export const employees: Employee[] = [
     position: "Product Manager",
     department: "Product",
     joinDate: "2023-03-20",
+    hourlyRate: 225,
   },
   // Add more dummy employees as needed
 ];

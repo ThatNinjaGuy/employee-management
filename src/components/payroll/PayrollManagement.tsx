@@ -1,44 +1,249 @@
 "use client";
 
-import { useState } from "react";
-import { payrollConfig } from "@/types/payroll";
+import { useState, useMemo } from "react";
+import { AgGridReact } from "ag-grid-react";
+import {
+  ColDef,
+  ValueSetterParams,
+  ICellRendererParams,
+  ModuleRegistry,
+  ClientSideRowModelModule,
+  TextFilterModule,
+  NumberFilterModule,
+  CellStyleModule,
+  NumberEditorModule,
+  ValidationModule,
+  RenderApiModule,
+} from "ag-grid-community";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+// import { payrollConfig } from "@/types/payroll";
 import { employeePayrolls } from "@/data/dummy";
 import { useEmployees } from "@/context/EmployeeContext";
-import { PayrollCard } from "./PayrollCard";
 import { PayrollHeader } from "./PayrollHeader";
 import { EmployeePayroll } from "@/types";
-
 import { utils, writeFile } from "xlsx";
+
+// Register all required modules
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  TextFilterModule,
+  NumberFilterModule,
+  CellStyleModule,
+  NumberEditorModule,
+  ValidationModule,
+  RenderApiModule,
+]);
 
 export function PayrollManagement() {
   const { employees } = useEmployees();
   const [selectedMonth, setSelectedMonth] = useState<string>(
     new Date().toISOString().slice(0, 7)
-  ); // YYYY-MM format
+  );
   const [payrollData, setPayrollData] = useState(employeePayrolls);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
 
-  // Add console.log to debug
-  console.log({
-    selectedMonth,
-    payrollData,
-    filteredPayroll: payrollData.filter((p) => p.month === selectedMonth),
-  });
-
-  const handlePayrollUpdate = (
-    employeeId: number,
-    updatedPayroll: EmployeePayroll
-  ) => {
-    setPayrollData((prev) =>
-      prev.map((payroll) =>
-        payroll.employeeId === employeeId ? updatedPayroll : payroll
-      )
+  const calculateNetPayable = (payroll: EmployeePayroll) => {
+    return (
+      payroll.basicWage +
+      payroll.overtime.amount -
+      payroll.allowances.food -
+      payroll.allowances.travel -
+      payroll.deductions.advances -
+      payroll.deductions.other
     );
   };
 
-  const filteredPayroll = payrollData.filter((p) => p.month === selectedMonth);
+  // Prepare row data
+  const rowData = useMemo(() => {
+    return employees
+      .filter((employee) => {
+        const matchesSearch = employee.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const matchesDepartment =
+          !selectedDepartment || employee.department === selectedDepartment;
+        return matchesSearch && matchesDepartment;
+      })
+      .map((employee) => {
+        const payroll = payrollData.find(
+          (p) => p.employeeId === employee.id && p.month === selectedMonth
+        ) || {
+          employeeId: employee.id,
+          month: selectedMonth,
+          basicWage: 0,
+          overtime: { hours: 0, amount: 0 },
+          allowances: { food: 0, travel: 0 },
+          deductions: { advances: 0, other: 0 },
+        };
+
+        return {
+          id: employee.id,
+          name: employee.name,
+          position: employee.position,
+          basicWage: payroll.basicWage,
+          overtimeHours: payroll.overtime.hours,
+          overtimeAmount: payroll.overtime.amount,
+          foodAllowance: payroll.allowances.food,
+          travelAllowance: payroll.allowances.travel,
+          advanceDeductions: payroll.deductions.advances,
+          otherDeductions: payroll.deductions.other,
+          netPayable: calculateNetPayable(payroll as EmployeePayroll),
+        };
+      });
+  }, [employees, payrollData, selectedMonth, searchTerm, selectedDepartment]);
+
+  // Column Definitions
+  const columnDefs: ColDef[] = [
+    {
+      field: "name",
+      headerName: "Employee",
+      editable: false,
+      cellRenderer: (params: ICellRendererParams) => (
+        <div>
+          <div className="font-medium">{params.data.name}</div>
+          <div className="text-sm opacity-70">{params.data.position}</div>
+        </div>
+      ),
+    },
+    {
+      field: "basicWage",
+      headerName: "Basic Wage",
+      editable: true,
+      valueFormatter: (params) => `₹${params.value}`,
+      valueSetter: (params: ValueSetterParams) =>
+        handleValueSetter(params, "basicWage"),
+    },
+    {
+      field: "overtimeHours",
+      headerName: "Overtime Hours",
+      editable: true,
+      valueSetter: (params: ValueSetterParams) =>
+        handleValueSetter(params, "overtimeHours"),
+    },
+    {
+      field: "overtimeAmount",
+      headerName: "Overtime Amount",
+      editable: true,
+      valueFormatter: (params) => `₹${params.value}`,
+      valueSetter: (params: ValueSetterParams) =>
+        handleValueSetter(params, "overtimeAmount"),
+    },
+    {
+      field: "foodAllowance",
+      headerName: "Food Allowance",
+      editable: true,
+      valueFormatter: (params) => `₹${params.value}`,
+      valueSetter: (params: ValueSetterParams) =>
+        handleValueSetter(params, "foodAllowance"),
+    },
+    {
+      field: "travelAllowance",
+      headerName: "Travel Allowance",
+      editable: true,
+      valueFormatter: (params) => `₹${params.value}`,
+      valueSetter: (params: ValueSetterParams) =>
+        handleValueSetter(params, "travelAllowance"),
+    },
+    {
+      field: "advanceDeductions",
+      headerName: "Advances",
+      editable: true,
+      valueFormatter: (params) => `₹${params.value}`,
+      valueSetter: (params: ValueSetterParams) =>
+        handleValueSetter(params, "advanceDeductions"),
+    },
+    {
+      field: "otherDeductions",
+      headerName: "Other Deductions",
+      editable: true,
+      valueFormatter: (params) => `₹${params.value}`,
+      valueSetter: (params: ValueSetterParams) =>
+        handleValueSetter(params, "otherDeductions"),
+    },
+    {
+      field: "netPayable",
+      headerName: "Net Payable",
+      editable: false,
+      valueFormatter: (params) => `₹${params.value}`,
+      cellClass: "font-medium text-accent-main",
+    },
+  ];
+
+  const handleValueSetter = (params: ValueSetterParams, field: string) => {
+    const newValue = Number(params.newValue);
+    if (isNaN(newValue)) return false;
+
+    const updatedData = { ...params.data, [field]: newValue };
+
+    // Calculate overtime amount if hours changed
+    if (field === "overtimeHours") {
+      const employee = employees.find((emp) => emp.id === updatedData.id);
+      if (employee) {
+        updatedData.overtimeAmount = newValue * employee.hourlyRate;
+      }
+    }
+
+    // Create a temporary payroll object for net payable calculation
+    const tempPayroll: EmployeePayroll = {
+      employeeId: updatedData.id,
+      month: selectedMonth,
+      basicWage: updatedData.basicWage || 0,
+      overtime: {
+        hours: updatedData.overtimeHours || 0,
+        amount: updatedData.overtimeAmount || 0,
+      },
+      allowances: {
+        food: updatedData.foodAllowance || 0,
+        travel: updatedData.travelAllowance || 0,
+      },
+      deductions: {
+        advances: updatedData.advanceDeductions || 0,
+        other: updatedData.otherDeductions || 0,
+      },
+      netPayable: 0,
+      advances: updatedData.advanceDeductions || 0,
+    };
+
+    // Calculate net payable
+    tempPayroll.netPayable = calculateNetPayable(tempPayroll);
+
+    // Update payroll data
+    setPayrollData((prev) => {
+      const index = prev.findIndex(
+        (p) =>
+          p.employeeId === tempPayroll.employeeId && p.month === selectedMonth
+      );
+      if (index === -1) {
+        return [...prev, tempPayroll];
+      }
+      const newData = [...prev];
+      newData[index] = tempPayroll;
+      return newData;
+    });
+
+    // Update all values in the row data
+    params.data[field] = newValue;
+    params.data.netPayable = tempPayroll.netPayable;
+
+    // Force refresh the entire row
+    if (params.node) {
+      params.api.refreshCells({
+        rowNodes: [params.node],
+        force: true,
+      });
+    }
+
+    return true;
+  };
+
+  // AG Grid default configuration
+  const defaultColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true,
+  };
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -47,15 +252,6 @@ export function PayrollManagement() {
   const handleDepartmentChange = (department: string) => {
     setSelectedDepartment(department);
   };
-
-  const filteredEmployees = employees.filter((employee) => {
-    const matchesSearch = employee.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesDepartment =
-      !selectedDepartment || employee.department === selectedDepartment;
-    return matchesSearch && matchesDepartment;
-  });
 
   const handleExportReport = () => {
     try {
@@ -70,8 +266,8 @@ export function PayrollManagement() {
 
         const netPayable =
           payroll.basicWage +
-          payroll.overtime.amount +
-          payroll.allowances.food +
+          payroll.overtime.amount -
+          payroll.allowances.food -
           payroll.allowances.travel -
           payroll.deductions.advances -
           payroll.deductions.other;
@@ -137,50 +333,18 @@ export function PayrollManagement() {
           handleExportReport={handleExportReport}
         />
 
-        <div className="mt-8 overflow-x-auto bg-white/10 backdrop-blur-md rounded-2xl border border-white/10">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left py-4 px-4 text-white/70">Employee</th>
-                <th className="text-right py-4 px-4 text-white/70">
-                  Basic Wage
-                </th>
-                <th className="text-right py-4 px-4 text-white/70">Overtime</th>
-                <th className="text-right py-4 px-4 text-white/70">
-                  Allowances
-                </th>
-                <th className="text-right py-4 px-4 text-white/70">
-                  Deductions
-                </th>
-                <th className="text-right py-4 px-4 text-white/70">
-                  Net Payable
-                </th>
-                <th className="text-right py-4 px-4 text-white/70">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredEmployees.map((employee) => {
-                const payroll = filteredPayroll.find(
-                  (p) => p.employeeId === employee.id
-                );
-                return (
-                  <PayrollCard
-                    key={employee.id}
-                    employee={employee}
-                    payroll={payroll}
-                    payrollConfig={payrollConfig}
-                    isEditing={editingId === employee.id}
-                    onEditClick={() => setEditingId(employee.id)}
-                    onSave={(updatedPayroll) => {
-                      handlePayrollUpdate(employee.id, updatedPayroll);
-                      setEditingId(null);
-                    }}
-                    onCancel={() => setEditingId(null)}
-                  />
-                );
-              })}
-            </tbody>
-          </table>
+        <div
+          className="mt-8 ag-theme-alpine-dark"
+          style={{ height: "600px", width: "100%" }}
+        >
+          <AgGridReact
+            theme="legacy"
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            animateRows={true}
+            suppressClickEdit={false}
+          />
         </div>
       </div>
     </div>

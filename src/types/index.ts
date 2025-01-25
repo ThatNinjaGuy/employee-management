@@ -5,6 +5,7 @@ export interface Employee {
   position: string;
   department: string;
   joinDate: string;
+  hourlyRate: number;
 }
 
 export interface Attendance {
