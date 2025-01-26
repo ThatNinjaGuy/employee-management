@@ -107,6 +107,8 @@ export function EmployeeManagement() {
               setEditingEmployee(null);
               setIsAddingEmployee(false);
             }}
+            sites={sites}
+            suppliers={suppliers}
           />
         </div>
       </div>
