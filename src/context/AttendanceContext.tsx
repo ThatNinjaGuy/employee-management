@@ -21,6 +21,7 @@ interface AttendanceContextType {
     record: AttendanceRecord
   ) => Promise<void>;
   bulkCheckout: (date: string, checkOutTime: string) => Promise<void>;
+  updateAttendance: (attendance: EmployeeAttendance) => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(
@@ -67,19 +68,37 @@ export function AttendanceProvider({
           );
 
           if (existingEmployeeIndex >= 0) {
-            // Update existing employee's attendance
             const updated = [...current];
+            const existingAttendance =
+              updated[existingEmployeeIndex].attendance || [];
+
+            // Check if attendance for this date already exists
+            const dateIndex = existingAttendance.findIndex(
+              (a) => a.date === record.date
+            );
+
+            if (dateIndex >= 0) {
+              // Update existing date's attendance
+              existingAttendance[dateIndex] = record;
+            } else {
+              // Add new attendance record
+              existingAttendance.push(record);
+            }
+
             updated[existingEmployeeIndex] = {
               ...updated[existingEmployeeIndex],
-              attendance: [
-                ...updated[existingEmployeeIndex].attendance,
-                record,
-              ],
+              attendance: existingAttendance,
             };
             return updated;
           } else {
             // Add new employee attendance
-            return [...current, { employeeId, attendance: [record] }];
+            return [
+              ...current,
+              {
+                employeeId,
+                attendance: [record],
+              },
+            ];
           }
         });
       } catch (err) {
@@ -164,6 +183,40 @@ export function AttendanceProvider({
     []
   );
 
+  const updateAttendance = useCallback(
+    async (attendance: EmployeeAttendance) => {
+      try {
+        setLoading(true);
+        await attendanceService.updateAttendance(attendance);
+
+        // Update local state
+        setEmployeeAttendance((prev) => {
+          const index = prev.findIndex(
+            (a) => a.employeeId === attendance.employeeId
+          );
+          if (index === -1) {
+            // New record
+            return [...prev, attendance];
+          }
+          // Update existing
+          const updated = [...prev];
+          updated[index] = attendance;
+          return updated;
+        });
+
+        setError(null);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to update attendance";
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return (
     <AttendanceContext.Provider
       value={{
@@ -175,6 +228,7 @@ export function AttendanceProvider({
         addAttendanceRecord,
         updateAttendanceRecord,
         bulkCheckout,
+        updateAttendance,
       }}
     >
       {children}

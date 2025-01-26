@@ -50,35 +50,43 @@ export const attendanceService = {
       const q = query(attendanceRef, where("employeeId", "==", employeeId));
       const snapshot = await getDocs(q);
 
+      // Ensure record has all required fields
+      const validatedRecord = {
+        id: record.id,
+        date: record.date,
+        checkIn: record.checkIn || "",
+        checkOut: record.checkOut || "",
+        status: record.status,
+      };
+
       if (!snapshot.empty) {
         // Update existing document
         const docRef = doc(db, "attendance", snapshot.docs[0].id);
         const existingData = snapshot.docs[0].data();
+        const existingAttendance = existingData.attendance || [];
 
-        // Check if attendance for this date already exists
-        const existingAttendanceIndex = existingData.attendance.findIndex(
+        const existingAttendanceIndex = existingAttendance.findIndex(
           (a: AttendanceRecord) => a.date === record.date
         );
 
         let updatedAttendance;
         if (existingAttendanceIndex >= 0) {
-          // Update existing attendance for this date
-          updatedAttendance = existingData.attendance.map(
-            (a: AttendanceRecord) => (a.date === record.date ? record : a)
+          updatedAttendance = existingAttendance.map((a: AttendanceRecord) =>
+            a.date === record.date ? validatedRecord : a
           );
         } else {
-          // Add new attendance record
-          updatedAttendance = [...existingData.attendance, record];
+          updatedAttendance = [...existingAttendance, validatedRecord];
         }
 
         await updateDoc(docRef, {
+          employeeId,
           attendance: updatedAttendance,
         });
       } else {
-        // Create new document
+        // Create new document for new employee
         await addDoc(attendanceRef, {
           employeeId,
-          attendance: [record],
+          attendance: [validatedRecord],
         });
       }
     } catch (error) {
@@ -134,6 +142,29 @@ export const attendanceService = {
       await Promise.all(updates);
     } catch (error) {
       console.error("Error performing bulk checkout:", error);
+      throw error;
+    }
+  },
+
+  async updateAttendance(attendance: EmployeeAttendance): Promise<void> {
+    try {
+      const attendanceRef = collection(db, "attendance");
+
+      // If no docId, it's a new record - create it
+      if (!attendance.docId) {
+        await addDoc(attendanceRef, {
+          employeeId: attendance.employeeId,
+          attendance: attendance.attendance,
+        });
+      } else {
+        // Update existing record
+        const docRef = doc(db, "attendance", attendance.docId);
+        await updateDoc(docRef, {
+          attendance: attendance.attendance,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating attendance:", error);
       throw error;
     }
   },

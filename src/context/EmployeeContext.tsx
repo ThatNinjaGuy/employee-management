@@ -11,6 +11,7 @@ interface EmployeeContextType {
   fetchEmployees: () => Promise<void>;
   updateEmployee: (employee: Employee) => Promise<void>;
   deleteEmployee: (id: string) => Promise<void>;
+  addEmployee: (employee: Employee) => Promise<void>;
 }
 
 const EmployeeContext = createContext<EmployeeContextType | undefined>(
@@ -72,6 +73,24 @@ export function EmployeeProvider({ children }: { children: React.ReactNode }) {
     [fetchEmployees]
   );
 
+  const addEmployee = useCallback(
+    async (employee: Employee) => {
+      try {
+        setLoading(true);
+        await employeeService.addEmployee(employee);
+        await fetchEmployees(); // Refresh the list
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to add employee";
+        setError(errorMessage);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchEmployees]
+  );
+
   return (
     <EmployeeContext.Provider
       value={{
@@ -81,6 +100,7 @@ export function EmployeeProvider({ children }: { children: React.ReactNode }) {
         fetchEmployees,
         updateEmployee,
         deleteEmployee,
+        addEmployee,
       }}
     >
       {children}

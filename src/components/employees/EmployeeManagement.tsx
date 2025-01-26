@@ -10,9 +10,16 @@ import { Employee } from "@/types";
 import { useToast } from "@/context/ToastContext";
 
 export function EmployeeManagement() {
-  const { employees, loading, error, fetchEmployees, updateEmployee } =
-    useEmployees();
+  const {
+    employees,
+    loading,
+    error,
+    fetchEmployees,
+    updateEmployee,
+    addEmployee,
+  } = useEmployees();
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [isAddingEmployee, setIsAddingEmployee] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const { departments } = useDepartments();
@@ -35,13 +42,56 @@ export function EmployeeManagement() {
 
   const handleSave = async (employee: Employee) => {
     try {
-      await updateEmployee(employee);
-      setEditingEmployee(null);
-      showToast("Employee updated successfully", "success");
+      if (editingEmployee) {
+        await updateEmployee(employee);
+        setEditingEmployee(null);
+        showToast("Employee updated successfully", "success");
+      } else {
+        await addEmployee(employee);
+        setIsAddingEmployee(false);
+        showToast("Employee added successfully", "success");
+      }
     } catch (error) {
-      console.error("Failed to update employee:", error);
-      showToast("Failed to update employee", "error");
+      console.error("Failed to save employee:", error);
+      showToast(
+        `Failed to ${editingEmployee ? "update" : "add"} employee`,
+        "error"
+      );
     }
+  };
+
+  // Combine both edit and add modals into a single JSX
+  const renderEmployeeModal = () => {
+    const isEditing = !!editingEmployee;
+    const employee = editingEmployee || {
+      id: Date.now(),
+      name: "",
+      email: "",
+      position: "",
+      department: "",
+      joinDate: new Date().toISOString().slice(0, 10),
+      hourlyRate: 0,
+    };
+
+    if (!isEditing && !isAddingEmployee) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-primary-main rounded-2xl p-6 w-full max-w-2xl mx-4">
+          <h2 className="text-2xl font-bold text-white mb-6">
+            {isEditing ? "Edit Employee" : "Add New Employee"}
+          </h2>
+          <EmployeeEditForm
+            employee={employee}
+            onSave={handleSave}
+            onCancel={() => {
+              setEditingEmployee(null);
+              setIsAddingEmployee(false);
+            }}
+          />
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -81,6 +131,7 @@ export function EmployeeManagement() {
               selectedDepartment={selectedDepartment}
               setSelectedDepartment={setSelectedDepartment}
               departments={departments}
+              onAddEmployee={() => setIsAddingEmployee(true)}
             />
           </div>
         </div>
@@ -90,22 +141,17 @@ export function EmployeeManagement() {
           {filteredEmployees.map((employee) => (
             <div key={employee.id} className="group relative">
               <div className="absolute -inset-2 bg-gradient-to-r from-accent-main/20 to-accent-light/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              {editingEmployee?.id === employee.id ? (
-                <EmployeeEditForm
-                  employee={employee}
-                  onSave={handleSave}
-                  onCancel={() => setEditingEmployee(null)}
-                />
-              ) : (
-                <EmployeeCard
-                  employee={employee}
-                  onEdit={() => setEditingEmployee(employee)}
-                />
-              )}
+              <EmployeeCard
+                employee={employee}
+                onEdit={() => setEditingEmployee(employee)}
+              />
             </div>
           ))}
         </div>
       </div>
+
+      {/* Employee Modal - for both edit and add */}
+      {renderEmployeeModal()}
     </div>
   );
 }
