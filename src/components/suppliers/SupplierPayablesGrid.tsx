@@ -25,6 +25,7 @@ interface SupplierPayable {
   supplierId: string;
   supplierName: string;
   employeeCount: number;
+  activeSitesCount: number;
   totalPayable: number;
   month: string;
 }
@@ -71,6 +72,16 @@ export function SupplierPayablesGrid({
       ...numericColDef,
       field: "employeeCount",
       headerName: "Employee Count",
+      width: 200,
+      cellStyle: {
+        display: "flex",
+        alignItems: "center",
+      },
+    },
+    {
+      ...numericColDef,
+      field: "activeSitesCount",
+      headerName: "Active Sites",
       width: 200,
       cellStyle: {
         display: "flex",

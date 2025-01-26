@@ -38,6 +38,10 @@ export function SupplierManagement() {
       (emp) => emp.supplierId === supplier.id
     );
 
+    // Calculate unique active sites
+    const activeSitesCount = new Set(supplierEmployees.map((emp) => emp.siteId))
+      .size;
+
     // Calculate total payable from payroll data
     const totalPayable = payrollData
       .filter((p) => {
@@ -62,6 +66,7 @@ export function SupplierManagement() {
       supplierId: supplier.id,
       supplierName: supplier.name,
       employeeCount: supplierEmployees.length,
+      activeSitesCount,
       totalPayable,
       month: selectedMonth,
     };
