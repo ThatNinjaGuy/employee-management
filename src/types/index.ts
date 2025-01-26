@@ -27,6 +27,7 @@ export interface AttendanceRecord {
 }
 
 export interface EmployeeAttendance {
+  docId?: string;
   employeeId: number;
   attendance: AttendanceRecord[];
 }

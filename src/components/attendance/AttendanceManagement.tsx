@@ -1,22 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEmployees } from "@/context/EmployeeContext";
 import { useAttendance } from "@/context/AttendanceContext";
 import { AttendanceHeader } from "./AttendanceHeader";
 import { AttendanceCard } from "./AttendanceCard";
 import { departments } from "@/data/dummy";
+import { AttendanceRecord } from "@/types";
+import { useToast } from "@/context/ToastContext";
 
 export function AttendanceManagement() {
-  const { employees } = useEmployees();
-  const { employeeAttendance, addAttendanceRecord, bulkCheckout } =
-    useAttendance();
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+  const { employees, fetchEmployees } = useEmployees();
+  const {
+    employeeAttendance,
+    loading,
+    error,
+    fetchAttendanceByDate,
+    addAttendanceRecord,
+    setEmployeeAttendance,
+  } = useAttendance();
+  const { showToast } = useToast();
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().slice(0, 10)
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
+  const [pendingUpdates, setPendingUpdates] = useState<
+    Map<number, AttendanceRecord>
+  >(new Map());
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch employees and attendance data
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
+
+  useEffect(() => {
+    fetchAttendanceByDate(selectedDate);
+  }, [selectedDate, fetchAttendanceByDate]);
 
   const filteredEmployees = employees.filter((employee) => {
     const matchesSearch = employee.name
@@ -35,6 +57,40 @@ export function AttendanceManagement() {
     return employeeData?.attendance.find((a) => a.date === selectedDate);
   };
 
+  const handleMarkAttendance = (
+    employeeId: number,
+    status: "present" | "absent" | "late"
+  ) => {
+    const newRecord: AttendanceRecord = {
+      id: Date.now(),
+      date: selectedDate,
+      checkIn:
+        status === "absent" ? undefined : new Date().toLocaleTimeString(),
+      checkOut: status === "absent" ? undefined : undefined,
+      status,
+    };
+
+    // Store update in pending updates
+    setPendingUpdates(new Map(pendingUpdates.set(employeeId, newRecord)));
+
+    // Update local state immediately for UI
+    setEmployeeAttendance((current) => {
+      const existingEmployeeIndex = current.findIndex(
+        (emp) => emp.employeeId === employeeId
+      );
+
+      if (existingEmployeeIndex >= 0) {
+        const updated = [...current];
+        updated[existingEmployeeIndex] = {
+          ...updated[existingEmployeeIndex],
+          attendance: [newRecord],
+        };
+        return updated;
+      }
+      return [...current, { employeeId, attendance: [newRecord] }];
+    });
+  };
+
   const handleMarkAttendanceForSelected = (
     status: "present" | "absent" | "late"
   ) => {
@@ -48,7 +104,26 @@ export function AttendanceManagement() {
         checkOut: "",
         status,
       };
-      addAttendanceRecord(employeeId, newRecord);
+
+      // Add to pending updates instead of immediate firebase update
+      setPendingUpdates(new Map(pendingUpdates.set(employeeId, newRecord)));
+
+      // Update local state
+      setEmployeeAttendance((current) => {
+        const existingEmployeeIndex = current.findIndex(
+          (emp) => emp.employeeId === employeeId
+        );
+
+        if (existingEmployeeIndex >= 0) {
+          const updated = [...current];
+          updated[existingEmployeeIndex] = {
+            ...updated[existingEmployeeIndex],
+            attendance: [newRecord],
+          };
+          return updated;
+        }
+        return [...current, { employeeId, attendance: [newRecord] }];
+      });
     });
     setSelectedEmployees([]);
   };
@@ -61,33 +136,45 @@ export function AttendanceManagement() {
     );
   };
 
-  const handleMarkAttendance = (
-    employeeId: number,
-    status: "present" | "absent" | "late"
-  ) => {
-    const now = new Date().toLocaleTimeString("en-US", { hour12: false });
-    const newRecord = {
-      id: Date.now(),
-      date: selectedDate,
-      checkIn: now,
-      checkOut: "",
-      status,
-    };
-    addAttendanceRecord(employeeId, newRecord);
-  };
+  const handleBulkCheckout = async () => {
+    try {
+      setIsSaving(true); // Show loading state while processing
 
-  const handleBulkCheckOut = () => {
-    const now = new Date().toLocaleTimeString("en-US", { hour12: false });
-    bulkCheckout(selectedDate, now);
-  };
+      // Save all pending attendance records
+      const savePromises = Array.from(pendingUpdates.entries()).map(
+        ([employeeId, record]) => addAttendanceRecord(employeeId, record)
+      );
+      await Promise.all(savePromises);
 
-  // Get count of employees who haven't checked out
-  const pendingCheckouts = employeeAttendance.reduce((count, emp) => {
-    const todayRecord = emp.attendance.find(
-      (a) => a.date === selectedDate && !a.checkOut
-    );
-    return todayRecord ? count + 1 : count;
-  }, 0);
+      // Update local state with the pending changes
+      setEmployeeAttendance((current) => {
+        const updated = [...current];
+        pendingUpdates.forEach((record, employeeId) => {
+          const existingIndex = updated.findIndex(
+            (emp) => emp.employeeId === employeeId
+          );
+          if (existingIndex >= 0) {
+            updated[existingIndex] = {
+              ...updated[existingIndex],
+              attendance: [record],
+            };
+          } else {
+            updated.push({ employeeId, attendance: [record] });
+          }
+        });
+        return updated;
+      });
+
+      // Clear pending updates before fetching new data
+      setPendingUpdates(new Map());
+      showToast("All updates saved successfully", "success");
+    } catch (error) {
+      console.error("Failed to save updates:", error);
+      showToast("Failed to save updates", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSelectAll = () => {
     const allEmployeeIds = filteredEmployees.map((emp) => emp.id);
@@ -97,6 +184,18 @@ export function AttendanceManagement() {
         : allEmployeeIds
     );
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[600px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-main"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center">{error}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main relative">
@@ -193,26 +292,33 @@ export function AttendanceManagement() {
         </div>
 
         {/* Floating Checkout Button */}
-        {pendingCheckouts > 0 && (
+        {pendingUpdates.size > 0 && (
           <div className="fixed bottom-8 right-8 z-50">
             <button
-              onClick={handleBulkCheckOut}
-              className="group flex items-center gap-2 px-6 py-4 bg-accent-main hover:bg-accent-light text-primary-darkest font-semibold rounded-2xl shadow-lg transition-all duration-300 hover:scale-105"
+              onClick={handleBulkCheckout}
+              disabled={isSaving}
+              className="group flex items-center gap-2 px-6 py-4 bg-accent-main hover:bg-accent-light text-primary-darkest font-semibold rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Checkout All ({pendingCheckouts})
+              {isSaving ? (
+                <span>Saving...</span>
+              ) : (
+                <>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  Save Changes ({pendingUpdates.size})
+                </>
+              )}
             </button>
           </div>
         )}
