@@ -42,15 +42,21 @@ export function SupplierPayablesGrid({
     sortable: true,
     filter: true,
     resizable: true,
-    cellClass: "text-white/90",
+    cellClass: "text-white/90 flex items-center",
     headerClass: "text-white/90",
+    cellStyle: { display: "flex", alignItems: "center" },
   };
 
   const numericColDef: ColDef = {
     ...defaultColDef,
-    width: 150,
+    width: 180,
     filter: "agNumberColumnFilter",
-    cellClass: "text-right text-white/90",
+    cellClass: "text-white/90",
+    cellStyle: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-end",
+    },
   };
 
   const columnDefs: ColDef[] = [
@@ -65,15 +71,23 @@ export function SupplierPayablesGrid({
       ...numericColDef,
       field: "employeeCount",
       headerName: "Employee Count",
-      width: 150,
+      width: 200,
+      cellStyle: {
+        display: "flex",
+        alignItems: "center",
+      },
     },
     {
       ...numericColDef,
       field: "totalPayable",
       headerName: "Total Payable",
-      width: 180,
+      width: 200,
       valueFormatter: (params) => `₹${params.value.toLocaleString("en-IN")}`,
-      cellClass: "font-medium text-accent-main text-right",
+      cellClass: "font-medium text-accent-main",
+      cellStyle: {
+        display: "flex",
+        alignItems: "center",
+      },
     },
   ];
 
@@ -93,7 +107,7 @@ export function SupplierPayablesGrid({
           defaultColDef={defaultColDef}
           animateRows={true}
           suppressClickEdit={false}
-          rowHeight={80}
+          rowHeight={48}
           headerHeight={48}
           theme="legacy"
         />
