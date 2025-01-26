@@ -62,12 +62,13 @@ export function AttendanceManagement() {
     employeeId: number,
     status: "present" | "absent" | "late"
   ) => {
+    const now = new Date().toLocaleTimeString("en-US", { hour12: false });
+
     const newRecord: AttendanceRecord = {
       id: Date.now(),
       date: selectedDate,
-      checkIn:
-        status === "absent" ? undefined : new Date().toLocaleTimeString(),
-      checkOut: status === "absent" ? undefined : undefined,
+      checkIn: status === "absent" ? "" : now,
+      checkOut: "",
       status,
     };
 
@@ -82,13 +83,35 @@ export function AttendanceManagement() {
 
       if (existingEmployeeIndex >= 0) {
         const updated = [...current];
+        const existingAttendance =
+          updated[existingEmployeeIndex].attendance || [];
+
+        // Find if there's an existing record for this date
+        const dateIndex = existingAttendance.findIndex(
+          (a) => a.date === selectedDate
+        );
+
+        if (dateIndex >= 0) {
+          existingAttendance[dateIndex] = newRecord;
+        } else {
+          existingAttendance.push(newRecord);
+        }
+
         updated[existingEmployeeIndex] = {
           ...updated[existingEmployeeIndex],
-          attendance: [newRecord],
+          attendance: existingAttendance,
         };
         return updated;
       }
-      return [...current, { employeeId, attendance: [newRecord] }];
+
+      // Handle new employee
+      return [
+        ...current,
+        {
+          employeeId,
+          attendance: [newRecord],
+        },
+      ];
     });
   };
 
@@ -101,7 +124,7 @@ export function AttendanceManagement() {
       const newRecord = {
         id: Date.now() + employeeId,
         date: selectedDate,
-        checkIn: now,
+        checkIn: status === "absent" ? "" : now,
         checkOut: "",
         status,
       };
