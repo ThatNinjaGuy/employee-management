@@ -80,3 +80,8 @@ export interface EmployeePayroll {
   };
   netPayable: number;
 }
+
+export interface Supplier {
+  id: string;
+  name: string;
+}

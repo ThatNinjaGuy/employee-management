@@ -1,7 +1,8 @@
 import { Employee } from "@/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDepartments } from "@/hooks/useDepartments";
 import { useRoles } from "@/hooks/useRoles";
+import { useSuppliers } from "@/hooks/useSuppliers";
 
 interface EmployeeEditFormProps {
   employee: Employee;
@@ -17,6 +18,11 @@ export function EmployeeEditForm({
   const [formData, setFormData] = useState(employee);
   const { departments } = useDepartments();
   const { roles } = useRoles();
+  const { suppliers } = useSuppliers();
+
+  useEffect(() => {
+    console.log("Available suppliers:", suppliers);
+  }, [suppliers]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
