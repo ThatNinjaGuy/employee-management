@@ -35,6 +35,8 @@ interface PayrollGridProps {
   payrollData: EmployeePayroll[];
   searchTerm: string;
   selectedDepartment: string;
+  selectedSiteId: string;
+  selectedSupplierId: string;
   onSavePayroll: (payrolls: EmployeePayroll[]) => Promise<void>;
   disabled: boolean;
 }
@@ -44,6 +46,8 @@ export function PayrollGrid({
   payrollData,
   searchTerm,
   selectedDepartment,
+  selectedSiteId,
+  selectedSupplierId,
   onSavePayroll,
   disabled,
 }: PayrollGridProps) {
@@ -265,7 +269,12 @@ export function PayrollGrid({
         .includes(searchTerm.toLowerCase());
       const matchesDepartment =
         !selectedDepartment || employee.department === selectedDepartment;
-      return matchesSearch && matchesDepartment;
+      const matchesSite = !selectedSiteId || employee.siteId === selectedSiteId;
+      const matchesSupplier =
+        !selectedSupplierId || employee.supplierId === selectedSupplierId;
+      return (
+        matchesSearch && matchesDepartment && matchesSite && matchesSupplier
+      );
     })
     .map((employee) => {
       const payroll = localPayrollData.find(

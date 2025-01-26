@@ -29,6 +29,8 @@ export const employeeService = {
           department: data.department || "",
           joinDate: data.joinDate || "",
           hourlyRate: Number(data.hourlyRate) || 0,
+          siteId: data.siteId || "",
+          supplierId: data.supplierId || "",
         } as Employee;
       });
     } catch (error) {

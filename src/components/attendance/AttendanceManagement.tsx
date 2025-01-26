@@ -8,6 +8,8 @@ import { AttendanceCard } from "./AttendanceCard";
 import { AttendanceRecord } from "@/types";
 import { useToast } from "@/context/ToastContext";
 import { useDepartments } from "@/hooks/useDepartments";
+import { useSuppliers } from "@/hooks/useSuppliers";
+import { useSites } from "@/hooks/useSites";
 
 export function AttendanceManagement() {
   const { employees, fetchEmployees } = useEmployees();
@@ -31,6 +33,10 @@ export function AttendanceManagement() {
   >(new Map());
   const [isSaving, setIsSaving] = useState(false);
   const { departments } = useDepartments();
+  const { suppliers } = useSuppliers();
+  const { sites } = useSites();
+  const [selectedSiteId, setSelectedSiteId] = useState<string>("");
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
 
   // Fetch employees and attendance data
   useEffect(() => {
@@ -48,7 +54,13 @@ export function AttendanceManagement() {
     const matchesDepartment = selectedDepartment
       ? employee.department === selectedDepartment
       : true;
-    return matchesSearch && matchesDepartment;
+    const matchesSite = selectedSiteId
+      ? employee.siteId === selectedSiteId
+      : true;
+    const matchesSupplier = selectedSupplierId
+      ? employee.supplierId === selectedSupplierId
+      : true;
+    return matchesSearch && matchesDepartment && matchesSite && matchesSupplier;
   });
 
   const getAttendanceForDate = (employeeId: number) => {
@@ -239,7 +251,13 @@ export function AttendanceManagement() {
           onSearchChange={setSearchTerm}
           selectedDepartment={selectedDepartment}
           onDepartmentChange={setSelectedDepartment}
+          selectedSiteId={selectedSiteId}
+          onSiteChange={setSelectedSiteId}
+          selectedSupplierId={selectedSupplierId}
+          onSupplierChange={setSelectedSupplierId}
           departments={departments}
+          sites={sites}
+          suppliers={suppliers}
         />
 
         {/* Selection Status Bar */}

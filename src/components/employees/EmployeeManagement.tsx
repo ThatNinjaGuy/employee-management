@@ -8,6 +8,8 @@ import { useEmployees } from "@/context/EmployeeContext";
 import { useDepartments } from "@/hooks/useDepartments";
 import { Employee } from "@/types";
 import { useToast } from "@/context/ToastContext";
+import { useSuppliers } from "@/hooks/useSuppliers";
+import { useSites } from "@/hooks/useSites";
 
 export function EmployeeManagement() {
   const {
@@ -22,7 +24,11 @@ export function EmployeeManagement() {
   const [isAddingEmployee, setIsAddingEmployee] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedSiteId, setSelectedSiteId] = useState<string>("");
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
   const { departments } = useDepartments();
+  const { suppliers } = useSuppliers();
+  const { sites } = useSites();
 
   const { showToast } = useToast();
 
@@ -34,10 +40,23 @@ export function EmployeeManagement() {
     const matchesSearch = employee.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
+
     const matchesDepartment = selectedDepartment
       ? employee.department === selectedDepartment
       : true;
-    return matchesSearch && matchesDepartment;
+
+    const matchesSite = selectedSiteId
+      ? employee.siteId && employee.siteId === selectedSiteId
+      : true;
+
+    const matchesSupplier = selectedSupplierId
+      ? employee.supplierId && employee.supplierId === selectedSupplierId
+      : true;
+
+    const finalResult =
+      matchesSearch && matchesDepartment && matchesSite && matchesSupplier;
+
+    return finalResult;
   });
 
   const handleSave = async (employee: Employee) => {
@@ -130,7 +149,13 @@ export function EmployeeManagement() {
               setSearchTerm={setSearchTerm}
               selectedDepartment={selectedDepartment}
               setSelectedDepartment={setSelectedDepartment}
+              selectedSiteId={selectedSiteId}
+              setSelectedSiteId={setSelectedSiteId}
+              selectedSupplierId={selectedSupplierId}
+              setSelectedSupplierId={setSelectedSupplierId}
               departments={departments}
+              sites={sites}
+              suppliers={suppliers}
               onAddEmployee={() => setIsAddingEmployee(true)}
             />
           </div>

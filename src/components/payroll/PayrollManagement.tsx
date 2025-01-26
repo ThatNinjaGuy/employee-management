@@ -8,6 +8,9 @@ import { useEmployees } from "@/context/EmployeeContext";
 import { usePayroll } from "@/context/PayrollContext";
 import { useToast } from "@/context/ToastContext";
 import { EmployeePayroll } from "@/types";
+import { useDepartments } from "@/hooks/useDepartments";
+import { useSuppliers } from "@/hooks/useSuppliers";
+import { useSites } from "@/hooks/useSites";
 
 export function PayrollManagement() {
   const { employees, fetchEmployees } = useEmployees();
@@ -18,10 +21,15 @@ export function PayrollManagement() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedSiteId, setSelectedSiteId] = useState("");
+  const [selectedSupplierId, setSelectedSupplierId] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const prevMonthRef = useRef<string | null>(null);
 
   const { showToast } = useToast();
+  const { departments } = useDepartments();
+  const { suppliers } = useSuppliers();
+  const { sites } = useSites();
 
   // Fetch employees on mount
   useEffect(() => {
@@ -114,8 +122,17 @@ export function PayrollManagement() {
         <PayrollHeader
           selectedMonth={selectedMonth}
           onMonthChange={handleMonthChange}
+          searchTerm={searchTerm}
           onSearch={handleSearch}
+          selectedDepartment={selectedDepartment}
           onDepartmentChange={handleDepartmentChange}
+          selectedSiteId={selectedSiteId}
+          onSiteChange={setSelectedSiteId}
+          selectedSupplierId={selectedSupplierId}
+          onSupplierChange={setSelectedSupplierId}
+          departments={departments}
+          sites={sites}
+          suppliers={suppliers}
           handleExportReport={handleExportReport}
         />
 
@@ -128,6 +145,8 @@ export function PayrollManagement() {
               payrollData={payrollData}
               searchTerm={searchTerm}
               selectedDepartment={selectedDepartment}
+              selectedSiteId={selectedSiteId}
+              selectedSupplierId={selectedSupplierId}
               onSavePayroll={handleSavePayroll}
               disabled={isSaving}
             />
