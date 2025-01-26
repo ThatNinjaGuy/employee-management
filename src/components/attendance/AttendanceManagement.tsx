@@ -185,16 +185,20 @@ export function AttendanceManagement() {
     );
   };
 
-  if (loading) {
+  if (loading || isSaving) {
     return (
-      <div className="flex justify-center items-center h-[600px]">
+      <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main flex justify-center items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-main"></div>
       </div>
     );
   }
 
   if (error) {
-    return <div className="text-red-500 text-center">{error}</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main flex justify-center items-center">
+        <div className="text-red-500 text-center">{error}</div>
+      </div>
+    );
   }
 
   return (
@@ -299,9 +303,7 @@ export function AttendanceManagement() {
               disabled={isSaving}
               className="group flex items-center gap-2 px-6 py-4 bg-accent-main hover:bg-accent-light text-primary-darkest font-semibold rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50"
             >
-              {isSaving ? (
-                <span>Saving...</span>
-              ) : (
+              {
                 <>
                   <svg
                     className="w-5 h-5"
@@ -318,7 +320,7 @@ export function AttendanceManagement() {
                   </svg>
                   Save Changes ({pendingUpdates.size})
                 </>
-              )}
+              }
             </button>
           </div>
         )}
