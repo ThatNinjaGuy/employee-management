@@ -1,6 +1,7 @@
 import { Employee } from "@/types";
 import { useState } from "react";
 import { useDepartments } from "@/hooks/useDepartments";
+import { useRoles } from "@/hooks/useRoles";
 
 interface EmployeeEditFormProps {
   employee: Employee;
@@ -15,6 +16,7 @@ export function EmployeeEditForm({
 }: EmployeeEditFormProps) {
   const [formData, setFormData] = useState(employee);
   const { departments } = useDepartments();
+  const { roles } = useRoles();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -63,14 +65,20 @@ export function EmployeeEditForm({
           <label className="block text-sm font-medium text-white/70 mb-1">
             Position
           </label>
-          <input
-            type="text"
+          <select
+            name="position"
             value={formData.position}
-            onChange={(e) =>
-              setFormData({ ...formData, position: e.target.value })
-            }
-            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-accent-main/50"
-          />
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent-main/50"
+            required
+          >
+            <option value="">Select Position</option>
+            {roles.map((role: string) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-white/70 mb-1">
