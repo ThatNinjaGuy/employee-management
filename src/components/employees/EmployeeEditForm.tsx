@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useDepartments } from "@/hooks/useDepartments";
 import { useRoles } from "@/hooks/useRoles";
 import { useSuppliers } from "@/hooks/useSuppliers";
+import { useSites } from "@/hooks/useSites";
 
 interface EmployeeEditFormProps {
   employee: Employee;
@@ -19,10 +20,15 @@ export function EmployeeEditForm({
   const { departments } = useDepartments();
   const { roles } = useRoles();
   const { suppliers } = useSuppliers();
+  const { sites } = useSites();
 
   useEffect(() => {
     console.log("Available suppliers:", suppliers);
   }, [suppliers]);
+
+  useEffect(() => {
+    console.log("Available sites:", sites);
+  }, [sites]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

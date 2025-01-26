@@ -85,3 +85,8 @@ export interface Supplier {
   id: string;
   name: string;
 }
+
+export interface Site {
+  id: string;
+  name: string;
+}

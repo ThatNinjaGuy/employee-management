@@ -8,7 +8,7 @@ import {
   updateDoc,
   addDoc,
 } from "firebase/firestore";
-import { Supplier } from "@/types";
+import { Supplier, Site } from "@/types";
 
 export const configService = {
   async getDepartments(): Promise<string[]> {
@@ -140,6 +140,51 @@ export const configService = {
       }
     } catch (error) {
       console.error("Error updating suppliers:", error);
+      throw error;
+    }
+  },
+
+  async getSites(): Promise<Site[]> {
+    try {
+      const configRef = collection(db, "config");
+      const sitesQuery = query(configRef, where("type", "==", "sites"));
+      const snapshot = await getDocs(sitesQuery);
+
+      if (!snapshot.empty) {
+        const sitesDoc = snapshot.docs[0].data();
+        return (sitesDoc.data as Site[]).map((site) => ({
+          ...site,
+          id: site.id || crypto.randomUUID(), // Ensure existing data has IDs
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching sites:", error);
+      throw error;
+    }
+  },
+
+  async updateSites(sites: Site[]): Promise<void> {
+    try {
+      const configRef = collection(db, "config");
+      const sitesQuery = query(configRef, where("type", "==", "sites"));
+      const snapshot = await getDocs(sitesQuery);
+
+      if (!snapshot.empty) {
+        const docRef = doc(db, "config", snapshot.docs[0].id);
+        await updateDoc(docRef, {
+          data: sites,
+          updatedAt: new Date().toISOString(),
+        });
+      } else {
+        await addDoc(configRef, {
+          type: "sites",
+          data: sites,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating sites:", error);
       throw error;
     }
   },
