@@ -7,6 +7,8 @@ export interface Employee {
   department: string;
   joinDate: string;
   hourlyRate: number;
+  siteId?: string;
+  supplierId?: string;
 }
 
 export interface Attendance {
@@ -79,4 +81,14 @@ export interface EmployeePayroll {
     balance: number;
   };
   netPayable: number;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+}
+
+export interface Site {
+  id: string;
+  name: string;
 }

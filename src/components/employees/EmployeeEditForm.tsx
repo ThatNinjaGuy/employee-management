@@ -1,20 +1,37 @@
-import { Employee } from "@/types";
+import { Employee, Site, Supplier } from "@/types";
 import { useState } from "react";
-import { useDepartments } from "@/hooks/useDepartments";
+import { useRoles } from "@/hooks/useRoles";
 
 interface EmployeeEditFormProps {
   employee: Employee;
   onSave: (employee: Employee) => void;
   onCancel: () => void;
+  sites: Site[];
+  suppliers: Supplier[];
+  // departments: string[];  // Comment out but keep for reference
 }
 
 export function EmployeeEditForm({
   employee,
   onSave,
   onCancel,
-}: EmployeeEditFormProps) {
-  const [formData, setFormData] = useState(employee);
-  const { departments } = useDepartments();
+  sites,
+  suppliers,
+}: // departments,  // Comment out but keep for reference
+EmployeeEditFormProps) {
+  const [formData, setFormData] = useState<Partial<Employee>>(
+    employee || {
+      name: "",
+      email: "",
+      position: "",
+      // department: "",  // Keep in state but comment out default
+      joinDate: new Date().toISOString().slice(0, 10),
+      hourlyRate: 0,
+      siteId: "",
+      supplierId: "",
+    }
+  );
+  const { roles } = useRoles();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -26,12 +43,15 @@ export function EmployeeEditForm({
     }));
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // department will be saved as empty/null since we're not setting it
+    onSave(formData as Employee);
+  };
+
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSave(formData);
-      }}
+      onSubmit={handleSubmit}
       className="p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10"
     >
       <div className="space-y-4">
@@ -59,37 +79,86 @@ export function EmployeeEditForm({
             className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-accent-main/50"
           />
         </div>
+        {/* <div className="grid grid-cols-2 gap-4"> */}
         <div>
           <label className="block text-sm font-medium text-white/70 mb-1">
             Position
           </label>
-          <input
-            type="text"
-            value={formData.position}
-            onChange={(e) =>
-              setFormData({ ...formData, position: e.target.value })
-            }
-            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-accent-main/50"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-white/70 mb-1">
-            Department
-          </label>
           <select
-            name="department"
-            value={formData.department}
+            name="position"
+            value={formData.position}
             onChange={handleInputChange}
             className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent-main/50"
             required
           >
-            <option value="">Select Department</option>
-            {departments.map((dept: string) => (
-              <option key={dept} value={dept}>
-                {dept}
+            <option value="">Select Position</option>
+            {roles.map((role: string) => (
+              <option key={role} value={role}>
+                {role}
               </option>
             ))}
           </select>
+        </div>
+        {/* Comment out department select but keep for reference
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-1">
+              Department
+            </label>
+            <select
+              name="department"
+              value={formData.department || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, department: e.target.value })
+              }
+              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent-main/50"
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+          */}
+        {/* </div> */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-1">
+              Site
+            </label>
+            <select
+              name="siteId"
+              value={formData.siteId || ""}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent-main/50"
+            >
+              <option value="">Select Site</option>
+              {sites.map((site) => (
+                <option key={site.id} value={site.id}>
+                  {site.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-1">
+              Supplier
+            </label>
+            <select
+              name="supplierId"
+              value={formData.supplierId || ""}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent-main/50"
+            >
+              <option value="">Select Supplier</option>
+              {suppliers.map((supplier) => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
