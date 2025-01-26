@@ -63,4 +63,24 @@ export const employeeService = {
       throw error;
     }
   },
+
+  async addEmployee(employee: Employee): Promise<void> {
+    try {
+      const employeesRef = collection(db, "employees");
+
+      // Add the employee to Firestore with all required fields
+      await addDoc(employeesRef, {
+        id: employee.id, // Keep the ID as it's required in your structure
+        name: employee.name,
+        email: employee.email,
+        position: employee.position,
+        department: employee.department,
+        joinDate: employee.joinDate,
+        hourlyRate: Number(employee.hourlyRate),
+      });
+    } catch (error) {
+      console.error("Error adding employee:", error);
+      throw error;
+    }
+  },
 };
