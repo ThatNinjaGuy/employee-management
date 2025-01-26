@@ -42,7 +42,7 @@ export const employeeService = {
   async updateEmployee(employee: Employee): Promise<void> {
     try {
       const { docId, ...employeeData } = employee;
-
+      console.log("employeeData", employeeData);
       if (docId) {
         const employeeRef = doc(db, "employees", docId);
         await updateDoc(employeeRef, employeeData);
@@ -79,6 +79,8 @@ export const employeeService = {
         department: employee.department,
         joinDate: employee.joinDate,
         hourlyRate: Number(employee.hourlyRate),
+        siteId: employee.siteId,
+        supplierId: employee.supplierId,
       });
     } catch (error) {
       console.error("Error adding employee:", error);

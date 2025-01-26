@@ -1,5 +1,5 @@
 import { Employee, Site, Supplier } from "@/types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRoles } from "@/hooks/useRoles";
 
 interface EmployeeEditFormProps {
@@ -32,14 +32,6 @@ EmployeeEditFormProps) {
     }
   );
   const { roles } = useRoles();
-
-  useEffect(() => {
-    console.log("Available suppliers:", suppliers);
-  }, [suppliers]);
-
-  useEffect(() => {
-    console.log("Available sites:", sites);
-  }, [sites]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -88,26 +80,26 @@ EmployeeEditFormProps) {
           />
         </div>
         {/* <div className="grid grid-cols-2 gap-4"> */}
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-1">
-              Position
-            </label>
-            <select
-              name="position"
-              value={formData.position}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent-main/50"
-              required
-            >
-              <option value="">Select Position</option>
-              {roles.map((role: string) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-          </div>
-          {/* Comment out department select but keep for reference
+        <div>
+          <label className="block text-sm font-medium text-white/70 mb-1">
+            Position
+          </label>
+          <select
+            name="position"
+            value={formData.position}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent-main/50"
+            required
+          >
+            <option value="">Select Position</option>
+            {roles.map((role: string) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* Comment out department select but keep for reference
           <div>
             <label className="block text-sm font-medium text-white/70 mb-1">
               Department
