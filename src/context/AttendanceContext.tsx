@@ -41,9 +41,7 @@ export function AttendanceProvider({
   const fetchAttendanceByDate = useCallback(async (date: string) => {
     try {
       setLoading(true);
-      console.log(date);
       const data = await attendanceService.getAttendanceByDate(date);
-      console.log(data);
       setEmployeeAttendance(data);
       setError(null);
     } catch (err) {

@@ -5,7 +5,7 @@ import { EmployeeCard } from "./EmployeeCard";
 import { EmployeeEditForm } from "./EmployeeEditForm";
 import { EmployeeFilters } from "./EmployeeFilters";
 import { useEmployees } from "@/context/EmployeeContext";
-import { departments } from "@/data/dummy";
+import { useDepartments } from "@/hooks/useDepartments";
 import { Employee } from "@/types";
 import { useToast } from "@/context/ToastContext";
 
@@ -15,6 +15,7 @@ export function EmployeeManagement() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const { departments } = useDepartments();
 
   const { showToast } = useToast();
 

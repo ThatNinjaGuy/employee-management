@@ -5,9 +5,9 @@ import { useEmployees } from "@/context/EmployeeContext";
 import { useAttendance } from "@/context/AttendanceContext";
 import { AttendanceHeader } from "./AttendanceHeader";
 import { AttendanceCard } from "./AttendanceCard";
-import { departments } from "@/data/dummy";
 import { AttendanceRecord } from "@/types";
 import { useToast } from "@/context/ToastContext";
+import { useDepartments } from "@/hooks/useDepartments";
 
 export function AttendanceManagement() {
   const { employees, fetchEmployees } = useEmployees();
@@ -30,6 +30,7 @@ export function AttendanceManagement() {
     Map<number, AttendanceRecord>
   >(new Map());
   const [isSaving, setIsSaving] = useState(false);
+  const { departments } = useDepartments();
 
   // Fetch employees and attendance data
   useEffect(() => {

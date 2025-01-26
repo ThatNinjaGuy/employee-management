@@ -1,50 +1,79 @@
 "use client";
 
 import { useState } from "react";
+import { useDepartments } from "@/hooks/useDepartments";
 import { useToast } from "@/context/ToastContext";
-import { departments } from "@/data/dummy";
+import { configService } from "@/services/configService";
 
 export function DepartmentManagement() {
-  const [departmentList, setDepartmentList] = useState(departments);
+  const { departments, isLoading } = useDepartments();
   const [newDepartment, setNewDepartment] = useState("");
   const [editingDepartment, setEditingDepartment] = useState<{
-    index: number;
-    name: string;
+    original: string;
+    current: string;
   } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const { showToast } = useToast();
 
-  const handleAddDepartment = () => {
-    if (!newDepartment.trim()) {
-      showToast("Department name cannot be empty", "error");
-      return;
+  const handleAddDepartment = async () => {
+    if (!newDepartment.trim()) return;
+
+    try {
+      setIsSaving(true);
+      const updatedDepartments = [...departments, newDepartment];
+      await configService.updateDepartments(updatedDepartments);
+      setNewDepartment("");
+      showToast("Department added successfully", "success");
+    } catch (error) {
+      console.error("Failed to add department:", error);
+      showToast("Failed to add department", "error");
+    } finally {
+      setIsSaving(false);
     }
-    if (departmentList.includes(newDepartment)) {
-      showToast("Department already exists", "error");
-      return;
-    }
-    setDepartmentList([...departmentList, newDepartment]);
-    setNewDepartment("");
-    showToast("Department added successfully", "success");
   };
 
-  const handleUpdateDepartment = () => {
-    if (!editingDepartment) return;
-    if (!editingDepartment.name.trim()) {
-      showToast("Department name cannot be empty", "error");
-      return;
+  const handleUpdateDepartment = async () => {
+    if (!editingDepartment || !editingDepartment.current.trim()) return;
+
+    try {
+      setIsSaving(true);
+      const updatedDepartments = departments.map((dept) =>
+        dept === editingDepartment.original ? editingDepartment.current : dept
+      );
+      await configService.updateDepartments(updatedDepartments);
+      setEditingDepartment(null);
+      showToast("Department updated successfully", "success");
+    } catch (error) {
+      console.error("Failed to update department:", error);
+      showToast("Failed to update department", "error");
+    } finally {
+      setIsSaving(false);
     }
-    const newList = [...departmentList];
-    newList[editingDepartment.index] = editingDepartment.name;
-    setDepartmentList(newList);
-    setEditingDepartment(null);
-    showToast("Department updated successfully", "success");
   };
 
-  const handleDeleteDepartment = (index: number) => {
-    const newList = departmentList.filter((_, i) => i !== index);
-    setDepartmentList(newList);
-    showToast("Department deleted successfully", "success");
+  const handleDeleteDepartment = async (department: string) => {
+    try {
+      setIsSaving(true);
+      const updatedDepartments = departments.filter(
+        (dept) => dept !== department
+      );
+      await configService.updateDepartments(updatedDepartments);
+      showToast("Department deleted successfully", "success");
+    } catch (error) {
+      console.error("Failed to delete department:", error);
+      showToast("Failed to delete department", "error");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading || isSaving) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-main"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main relative">
@@ -82,19 +111,19 @@ export function DepartmentManagement() {
               Departments List
             </h2>
             <div className="space-y-4">
-              {departmentList.map((dept, index) => (
+              {departments.map((dept, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-4 bg-white/5 rounded-xl"
                 >
-                  {editingDepartment?.index === index ? (
+                  {editingDepartment?.original === dept ? (
                     <input
                       type="text"
-                      value={editingDepartment.name}
+                      value={editingDepartment.current}
                       onChange={(e) =>
                         setEditingDepartment({
                           ...editingDepartment,
-                          name: e.target.value,
+                          current: e.target.value,
                         })
                       }
                       className="flex-1 h-10 px-4 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent-main/50"
@@ -103,7 +132,7 @@ export function DepartmentManagement() {
                     <span className="text-white">{dept}</span>
                   )}
                   <div className="flex gap-2">
-                    {editingDepartment?.index === index ? (
+                    {editingDepartment?.original === dept ? (
                       <>
                         <button
                           onClick={handleUpdateDepartment}
@@ -122,14 +151,17 @@ export function DepartmentManagement() {
                       <>
                         <button
                           onClick={() =>
-                            setEditingDepartment({ index, name: dept })
+                            setEditingDepartment({
+                              original: dept,
+                              current: dept,
+                            })
                           }
                           className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
                         >
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteDepartment(index)}
+                          onClick={() => handleDeleteDepartment(dept)}
                           className="px-4 py-2 bg-red-500/80 text-white rounded-lg hover:bg-red-500 transition-colors"
                         >
                           Delete

@@ -1,6 +1,18 @@
 import { db } from "./config/firebase";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
-import { employees, employeePayrolls, employeeAttendance } from "./data/dummy";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  deleteDoc,
+} from "firebase/firestore";
+import {
+  employees,
+  employeePayrolls,
+  employeeAttendance,
+  departments,
+} from "./data/dummy";
 
 async function seedEmployees() {
   console.log("Seeding employees...");
@@ -64,15 +76,54 @@ async function seedAttendance() {
   }
 }
 
-async function seedAll() {
+async function seedDepartments() {
+  console.log("Seeding departments...");
+  const configRef = collection(db, "config");
+
+  // Check if departments document already exists
+  const deptQuery = query(configRef, where("type", "==", "departments"));
+  const deptSnapshot = await getDocs(deptQuery);
+
+  if (!deptSnapshot.empty) {
+    // Update existing departments
+    for (const doc of deptSnapshot.docs) {
+      await deleteDoc(doc.ref);
+    }
+  }
+
+  // Add new departments document
+  await addDoc(configRef, {
+    type: "departments",
+    data: departments,
+    updatedAt: new Date().toISOString(),
+  });
+
+  console.log("Departments seeded successfully!");
+}
+
+async function seedConfigs() {
+  console.log("Seeding configurations...");
+  try {
+    await seedDepartments();
+    // Add more config seeding functions here as needed
+    console.log("All configurations seeded successfully!");
+  } catch (error) {
+    console.error("Error seeding configurations:", error);
+    throw error; // Propagate error to main seedData function
+  }
+}
+
+async function seedData() {
   try {
     await seedEmployees();
     await seedPayrolls();
     await seedAttendance();
-    console.log("Data seeding completed successfully!");
+    await seedConfigs();
+
+    console.log("All data seeded successfully!");
   } catch (error) {
     console.error("Error seeding data:", error);
   }
 }
 
-seedAll();
+seedData();

@@ -1,12 +1,12 @@
-import { departments } from "@/data/dummy";
+import { useDepartments } from "@/hooks/useDepartments";
 
-interface PayrollHeaderProps {
-  selectedMonth: string; // YYYY-MM format
+type PayrollHeaderProps = {
+  selectedMonth: string;
   onMonthChange: (month: string) => void;
   onSearch?: (term: string) => void;
   onDepartmentChange?: (department: string) => void;
   handleExportReport: () => void;
-}
+};
 
 export function PayrollHeader({
   selectedMonth,
@@ -15,6 +15,8 @@ export function PayrollHeader({
   onDepartmentChange,
   handleExportReport,
 }: PayrollHeaderProps) {
+  const { departments } = useDepartments();
+
   // Generate an array of the next 24 months from now
   const months = Array.from({ length: 24 }, (_, i) => {
     const date = new Date();
@@ -51,13 +53,13 @@ export function PayrollHeader({
               className={`${inputClasses}`}
             >
               <option value="">All Departments</option>
-              {departments.map((department) => (
+              {departments.map((dept) => (
                 <option
-                  key={department}
-                  value={department}
+                  key={dept}
+                  value={dept}
                   className="text-primary-darkest"
                 >
-                  {department}
+                  {dept}
                 </option>
               ))}
             </select>
