@@ -57,6 +57,7 @@ export const payrollService = {
           },
           netPayable: Number(data.netPayable),
         };
+        console.log("payroll for month", payroll, month);
         return payroll;
       });
 

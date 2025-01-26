@@ -10,6 +10,7 @@ interface PayrollContextType {
   error: string | null;
   updatePayroll: (payroll: EmployeePayroll) => Promise<void>;
   fetchPayrollByMonth: (month: string) => Promise<void>;
+  fetchPayrollForMonths: (months: string[]) => Promise<void>;
 }
 
 const PayrollContext = createContext<PayrollContextType | undefined>(undefined);
@@ -23,7 +24,36 @@ export function PayrollProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       const data = await payrollService.getPayrollByMonth(month);
-      setPayrollData(data);
+      setPayrollData((prev) => {
+        const filtered = prev.filter((p) => p.month !== month);
+        return [...filtered, ...data];
+      });
+      setError(null);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch payroll data";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchPayrollForMonths = useCallback(async (months: string[]) => {
+    try {
+      setLoading(true);
+      const results = await Promise.all(
+        months.map((month) => payrollService.getPayrollByMonth(month))
+      );
+
+      // Combine all results and remove duplicates
+      setPayrollData((prev) => {
+        const newData = results.flat();
+        const existingMonths = new Set(newData.map((p) => p.month));
+        const filtered = prev.filter((p) => !existingMonths.has(p.month));
+        return [...filtered, ...newData];
+      });
+
       setError(null);
     } catch (err) {
       const errorMessage =
@@ -70,6 +100,7 @@ export function PayrollProvider({ children }: { children: React.ReactNode }) {
         error,
         updatePayroll,
         fetchPayrollByMonth,
+        fetchPayrollForMonths,
       }}
     >
       {children}
