@@ -7,15 +7,18 @@ import { exportPayrollToExcel } from "@/utils/excelExport";
 import { useEmployees } from "@/context/EmployeeContext";
 import { usePayroll } from "@/context/PayrollContext";
 import { useToast } from "@/context/ToastContext";
+import { EmployeePayroll } from "@/types";
 
 export function PayrollManagement() {
   const { employees, fetchEmployees } = useEmployees();
-  const { payrollData, loading, error, fetchPayrollByMonth } = usePayroll();
+  const { payrollData, loading, error, fetchPayrollByMonth, updatePayroll } =
+    usePayroll();
   const [selectedMonth, setSelectedMonth] = useState<string>(
     new Date().toISOString().slice(0, 7)
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const prevMonthRef = useRef<string | null>(null);
 
   const { showToast } = useToast();
@@ -32,6 +35,25 @@ export function PayrollManagement() {
       prevMonthRef.current = selectedMonth;
     }
   }, [selectedMonth, fetchPayrollByMonth]);
+
+  const handleSavePayroll = async (payrollsToUpdate: EmployeePayroll[]) => {
+    try {
+      setIsSaving(true);
+      // Wait for all payroll updates to complete
+      await Promise.all(
+        payrollsToUpdate.map((payroll) => updatePayroll(payroll))
+      );
+
+      // Refresh data
+      await fetchPayrollByMonth(selectedMonth);
+      showToast("Payroll updated successfully", "success");
+    } catch (error) {
+      console.error("Failed to update payroll", error);
+      showToast("Failed to update payroll", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -75,6 +97,14 @@ export function PayrollManagement() {
     }
   };
 
+  if (loading || isSaving) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-main"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-darkest via-primary-dark to-primary-main relative">
       <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:4rem_4rem] pointer-events-none" />
@@ -90,11 +120,7 @@ export function PayrollManagement() {
         />
 
         <div className="mt-8 pb-24">
-          {loading ? (
-            <div className="flex justify-center items-center h-[600px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-main"></div>
-            </div>
-          ) : error ? (
+          {error ? (
             <div className="text-red-500 text-center">{error}</div>
           ) : (
             <PayrollGrid
@@ -102,6 +128,8 @@ export function PayrollManagement() {
               payrollData={payrollData}
               searchTerm={searchTerm}
               selectedDepartment={selectedDepartment}
+              onSavePayroll={handleSavePayroll}
+              disabled={isSaving}
             />
           )}
         </div>

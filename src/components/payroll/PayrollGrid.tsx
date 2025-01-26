@@ -14,12 +14,10 @@ import {
 } from "ag-grid-community";
 import { EmployeePayroll } from "@/types";
 import { useEmployees } from "@/context/EmployeeContext";
-import { usePayroll } from "@/context/PayrollContext";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "@/styles/ag-grid-custom.css";
 import { useState, useEffect } from "react";
-import { useToast } from "@/context/ToastContext";
 
 // Register all required modules
 ModuleRegistry.registerModules([
@@ -37,6 +35,8 @@ interface PayrollGridProps {
   payrollData: EmployeePayroll[];
   searchTerm: string;
   selectedDepartment: string;
+  onSavePayroll: (payrolls: EmployeePayroll[]) => Promise<void>;
+  disabled: boolean;
 }
 
 export function PayrollGrid({
@@ -44,10 +44,10 @@ export function PayrollGrid({
   payrollData,
   searchTerm,
   selectedDepartment,
+  onSavePayroll,
+  disabled,
 }: PayrollGridProps) {
   const { employees } = useEmployees();
-  const { updatePayroll } = usePayroll();
-  const { showToast } = useToast();
   const [localPayrollData, setLocalPayrollData] = useState<EmployeePayroll[]>(
     []
   );
@@ -155,18 +155,6 @@ export function PayrollGrid({
     }
 
     return true;
-  };
-
-  const handleSavePayroll = () => {
-    try {
-      localPayrollData.forEach((payroll) => {
-        updatePayroll(payroll);
-      });
-      showToast("Payroll updated successfully", "success");
-    } catch (error) {
-      console.error("Failed to update payroll", error);
-      showToast("Failed to update payroll", "error");
-    }
   };
 
   const defaultColDef = {
@@ -330,8 +318,11 @@ export function PayrollGrid({
       </div>
       <div className="fixed bottom-8 left-0 right-0 flex justify-center z-20">
         <button
-          onClick={handleSavePayroll}
-          className="px-6 py-3 bg-accent-main text-primary-darkest font-medium rounded-lg hover:bg-accent-light transition-colors shadow-lg backdrop-blur-sm"
+          onClick={() => onSavePayroll(localPayrollData)}
+          disabled={disabled}
+          className={`px-6 py-3 bg-accent-main text-primary-darkest font-medium rounded-lg transition-colors shadow-lg backdrop-blur-sm ${
+            disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-accent-light"
+          }`}
         >
           Update Payroll
         </button>
