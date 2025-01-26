@@ -10,6 +10,7 @@ export function useDepartments() {
     setDepartments,
     setLoading,
     setError,
+    refresh,
   } = useDepartmentStore();
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export function useDepartments() {
     };
 
     fetchDepartments();
-  }, []); // Empty dependency array as we only want to fetch once
+  }, [departments.length, setDepartments, setError, setLoading]);
 
-  return { departments, isLoading, error };
+  return { departments, isLoading, error, refresh };
 }

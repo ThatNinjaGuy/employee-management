@@ -6,7 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { configService } from "@/services/configService";
 
 export function DepartmentManagement() {
-  const { departments, isLoading } = useDepartments();
+  const { departments, isLoading, refresh } = useDepartments();
   const [newDepartment, setNewDepartment] = useState("");
   const [editingDepartment, setEditingDepartment] = useState<{
     original: string;
@@ -24,6 +24,7 @@ export function DepartmentManagement() {
       await configService.updateDepartments(updatedDepartments);
       setNewDepartment("");
       showToast("Department added successfully", "success");
+      refresh();
     } catch (error) {
       console.error("Failed to add department:", error);
       showToast("Failed to add department", "error");
@@ -43,6 +44,7 @@ export function DepartmentManagement() {
       await configService.updateDepartments(updatedDepartments);
       setEditingDepartment(null);
       showToast("Department updated successfully", "success");
+      refresh();
     } catch (error) {
       console.error("Failed to update department:", error);
       showToast("Failed to update department", "error");
@@ -59,6 +61,7 @@ export function DepartmentManagement() {
       );
       await configService.updateDepartments(updatedDepartments);
       showToast("Department deleted successfully", "success");
+      refresh();
     } catch (error) {
       console.error("Failed to delete department:", error);
       showToast("Failed to delete department", "error");
