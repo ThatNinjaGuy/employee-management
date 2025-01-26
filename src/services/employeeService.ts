@@ -12,7 +12,6 @@ import {
 export const employeeService = {
   async getEmployees(): Promise<Employee[]> {
     try {
-      console.log("Fetching employees...");
       const employeesRef = collection(db, "employees");
       const snapshot = await getDocs(employeesRef);
 
@@ -42,7 +41,6 @@ export const employeeService = {
   async updateEmployee(employee: Employee): Promise<void> {
     try {
       const { docId, ...employeeData } = employee;
-      console.log("employeeData", employeeData);
       if (docId) {
         const employeeRef = doc(db, "employees", docId);
         await updateDoc(employeeRef, employeeData);
