@@ -7,6 +7,8 @@ export interface Employee {
   department: string;
   joinDate: string;
   hourlyRate: number;
+  siteId?: string;
+  supplierId?: string;
 }
 
 export interface Attendance {
