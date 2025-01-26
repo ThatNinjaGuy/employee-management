@@ -65,8 +65,7 @@ export function SupplierPayablesGrid({
       ...defaultColDef,
       field: "supplierName",
       headerName: "Supplier Name",
-      flex: 1,
-      minWidth: 200,
+      width: 200,
     },
     {
       ...numericColDef,
@@ -99,6 +98,7 @@ export function SupplierPayablesGrid({
         display: "flex",
         alignItems: "center",
       },
+      flex: 1,
     },
   ];
 

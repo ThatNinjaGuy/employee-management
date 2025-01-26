@@ -62,3 +62,31 @@ export function exportPayrollToExcel(
     return false;
   }
 }
+
+interface ExcelExportConfig {
+  headers: string[];
+  data: (string | number)[][];
+  filename: string;
+  sheetName: string;
+}
+
+export async function excelExport({
+  headers,
+  data,
+  filename,
+  sheetName,
+}: ExcelExportConfig) {
+  try {
+    const ws = utils.aoa_to_sheet([headers, ...data]);
+    ws["!cols"] = headers.map(() => ({ wch: 15 })); // Set column width
+
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, sheetName);
+
+    writeFile(wb, `${filename}.xlsx`);
+    return true;
+  } catch (error) {
+    console.error("Export error:", error);
+    throw error;
+  }
+}

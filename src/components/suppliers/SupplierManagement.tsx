@@ -7,6 +7,7 @@ import { useEmployees } from "@/context/EmployeeContext";
 import { SupplierPayablesHeader } from "./SupplierPayablesHeader";
 import { SupplierPayablesGrid } from "./SupplierPayablesGrid";
 import { useToast } from "@/context/ToastContext";
+import { excelExport } from "@/utils/excelExport";
 
 export function SupplierManagement() {
   const { payrollData, loading, error, fetchPayrollByMonth } = usePayroll();
@@ -74,10 +75,30 @@ export function SupplierManagement() {
 
   const handleExportReport = async () => {
     try {
-      // Implement export functionality here
+      const headers = [
+        "Supplier Name",
+        "Employee Count",
+        "Active Sites",
+        "Total Payable",
+      ];
+
+      const data = supplierPayables.map((supplier) => [
+        supplier.supplierName,
+        supplier.employeeCount,
+        supplier.activeSitesCount,
+        `₹${supplier.totalPayable.toLocaleString("en-IN")}`,
+      ]);
+
+      await excelExport({
+        headers,
+        data,
+        filename: `Supplier_Payables_${selectedMonth}`,
+        sheetName: "Supplier Payables",
+      });
+
       showToast("Report exported successfully", "success");
     } catch (error) {
-      console.log("error", error);
+      console.error("Export error:", error);
       showToast("Failed to export report", "error");
     }
   };
