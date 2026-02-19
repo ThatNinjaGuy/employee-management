@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "949708868685",
+    "firebase_url": "https://employee-management-syst-9f4bd-default-rtdb.firebaseio.com",
+    "project_id": "employee-management-syst-9f4bd",
+    "storage_bucket": "employee-management-syst-9f4bd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:949708868685:android:44e2c20e53a1cf9db2a004",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTksU0HpE1FAGM_jqY65_aA5tPexeg_bY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

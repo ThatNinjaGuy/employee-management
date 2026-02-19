@@ -90,6 +90,29 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
+## Flutter Client
+
+The repository also includes a full-featured Flutter application located in `flutter_app/` that mirrors the Next.js experience while targeting both web and Android.
+
+### Prerequisites
+
+- Flutter SDK 3.24+ with web and Android tooling
+- Firebase project access (the same `employee-management-syst-9f4bd` project)
+
+### Running the Flutter app
+
+```bash
+cd flutter_app
+flutter run -d chrome        # Web
+flutter run -d android       # Android emulator or device
+```
+
+Before running the Flutter app ensure:
+
+- `firebase_options.dart` has been generated via `flutterfire configure`
+- Firestore contains the required seed data (see `SETUP_GUIDE.md`)
+- Your Firebase security rules allow reads/writes for development
+
 ## Project Structure
 
 ```

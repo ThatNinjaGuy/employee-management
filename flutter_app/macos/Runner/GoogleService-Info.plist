@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCY4MC8A2jQlisvZnUtDngkcEV1muVqb2k</string>
+	<key>GCM_SENDER_ID</key>
+	<string>949708868685</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.flutterApp</string>
+	<key>PROJECT_ID</key>
+	<string>employee-management-syst-9f4bd</string>
+	<key>STORAGE_BUCKET</key>
+	<string>employee-management-syst-9f4bd.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:949708868685:ios:fdc75ac0bc6e644ab2a004</string>
+	<key>DATABASE_URL</key>
+	<string>https://employee-management-syst-9f4bd-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>

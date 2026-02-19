@@ -11,6 +11,15 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+// Validate that required environment variables are set
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error(
+    "❌ Firebase configuration error: Missing required environment variables.",
+    "\nPlease create a .env.local file with NEXT_PUBLIC_FIREBASE_* variables.",
+    "\nSee SETUP_GUIDE.md for instructions."
+  );
+}
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
